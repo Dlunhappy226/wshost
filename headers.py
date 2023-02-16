@@ -1,10 +1,9 @@
-from datetime import datetime, timezone
-import platform
+import time
 
 def encode(status, content):
-    utctime = datetime.now(timezone.utc)
+    utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
     headerContent = {}
-    headerContent["Date"] = utctime.strftime("%a, %d %b %Y %H:%M:%S UTC")
+    headerContent["Date"] = utctime
     headerContent["Server"] = "WSHost/1.0"
 
     header = "HTTP/1.1 {}\r\n".format(status) 
