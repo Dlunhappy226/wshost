@@ -18,11 +18,12 @@ def clientHandler(conn, addr):
     try:
         header = headers.decode(request)
         head = header[0].split(" ")
+        head[1] = head[1].partition("?")[0]
         for key in config.custom_script:
             if "*" in key:
                 if key.split("*")[0] in head[1]:
                     try:
-                        config.custom_script[key]({"conn": conn, "addr": addr, "content": "request"})
+                        config.custom_script[key]({"conn": conn, "addr": addr, "content": request})
                     except:
                         traceback.print_exc()
                         response = headers.encode("500 Internal Server Error", [
@@ -34,7 +35,7 @@ def clientHandler(conn, addr):
                     break
             elif key == head[1]:
                 try:
-                    config.custom_script[key]({"conn": conn, "addr": addr, "content": "request"})
+                    config.custom_script[key]({"conn": conn, "addr": addr, "content": request})
                 except:
                     traceback.print_exc()
                     response = headers.encode("500 Internal Server Error", [
