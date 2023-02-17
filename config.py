@@ -1,9 +1,17 @@
-#Socket address
+#Socket binding address
 host = ""
 port = 8000
 
-#Server setting
+#Server config
 socket_max_receive_size = 4096
 
-#File setting
+#File config
 root_directory = "html"
+
+#Custom script
+
+import test
+
+custom_script = {
+    "/test": test.test
+}

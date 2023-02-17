@@ -1,3 +1,4 @@
+import traceback
 import threading
 import headers
 import socket
@@ -13,13 +14,42 @@ server.listen()
 
 def clientHandler(conn, addr):
     request = conn.recv(config.socket_max_receive_size)
+    scriptFound = False
     try:
         header = headers.decode(request)
         head = header[0].split(" ")
-        response = files.handleRequest(head)
+        for key in config.custom_script:
+            if "*" in key:
+                if key.split("*")[0] in head[1]:
+                    try:
+                        config.custom_script[key]({"conn": conn, "addr": addr, "content": "request"})
+                    except:
+                        traceback.print_exc()
+                        response = headers.encode("500 Internal Server Error", [
+                            ("Content-Length", "173"),
+                            ("Content-Type", "text/html")
+                        ]).encode() + files.read(config.root_directory + "/500.html")
+                        conn.sendall(response)
+                    scriptFound = True
+                    break
+            elif key == head[1]:
+                try:
+                    config.custom_script[key]({"conn": conn, "addr": addr, "content": "request"})
+                except:
+                    traceback.print_exc()
+                    response = headers.encode("500 Internal Server Error", [
+                        ("Content-Length", "173"),
+                        ("Content-Type", "text/html")
+                    ]).encode() + files.read(config.root_directory + "/500.html")
+                    conn.sendall(response)
+                scriptFound = True
+                break
+        if not scriptFound:
+            response = files.handleRequest(head)
     except:
-        response = headers.encode("400 Bad Request", []).encode() + "400 Bad Request".encode()
-    conn.sendall(response)
+        response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
+    if not scriptFound:
+        conn.sendall(response)
     conn.close()
 
 address = server.getsockname()
