@@ -3,21 +3,22 @@ import config
 import os
 
 fileType = {
-    "css": "text/css",
-    "html": "text/html",
-    "js": "text/javascript",
-    "apng": "image/apng",
-    "avif": "image/avif",
-    "gif": "image/gif",
-    "jpg": "image/jpeg",
-    "png": "image/png",
-    "svg": "image/svg+xml",
-    "webp": "image/webp",
-    "wav": "audio/wave",
-    "webm": "video/webm",
-    "ogg": "video/ogg",
-    "mp4": "video/mp4",
-    "mp3": "audio/mpeg",
+    "css": ("text/css", False),
+    "html": ("text/html", False),
+    "js": ("text/javascript", False),
+    "apng": ("image/apng", True),
+    "avif": ("image/avif", True),
+    "gif": ("image/gif", True),
+    "jpg": ("image/jpeg", True),
+    "png": ("image/png", True),
+    "svg": ("image/svg+xml", False),
+    "webp": ("image/webp", True),
+    "wav": ("audio/wave", True),
+    "webm": ("video/webm", True),
+    "ogg": ("video/ogg", True),
+    "mp4": ("video/mp4", True),
+    "mp3": ("audio/mpeg", True),
+    "txt": ("text/plain", False),
 }
 
 def read(filename):
@@ -34,7 +35,7 @@ def handleRequest(header):
         if filename == "":
             content = read(config.root_directory + header[1] + "index.html")
             status = "200 OK"
-            filenameType = fileType["html"]
+            filenameType = "html"
         elif os.path.exists(config.root_directory + header[1] + "/"):
             content = ""
             status = "307 Temporary Redirect"
@@ -43,17 +44,28 @@ def handleRequest(header):
             status = "200 OK"
             filenameExtension = filename.split(".")
             if filenameExtension[-1] in fileType:
-                filenameType = fileType[filenameExtension[-1]]
+                filenameType = filenameExtension[-1]
             else:
-                filenameType = "text/plain"
+                filenameType = "txt"
 
     except:
         content = read(config.root_directory + "/404.html")
         status = "404 Not Found"
-        filenameType = fileType["html"]
+        filenameType = "html"
     
     if status == "307 Temporary Redirect":
         response = headers.encode(status, [("Location", header[1] + "/")]).encode()
     else:
-        response = headers.encode(status, [("Content-Length", str(len(content))), ("Content-Type", filenameType)]).encode() + content
+        type = fileType[filenameType]
+        if type[1]:
+            response = headers.encode(status, [
+                ("Content-Length", str(len(content))),
+                ("Content-Type", type[0]),
+                ("accept-ranges", "bytes")
+            ]).encode() + content
+        else:
+            response = headers.encode(status, [(
+                "Content-Length", str(len(content))),
+                ("Content-Type", type[0])
+            ]).encode() + content
     return response
