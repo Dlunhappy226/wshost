@@ -15,3 +15,13 @@ def encode(status, content):
         header = header + "{}: {}\r\n".format(key[0], key[1])
 
     return header + "\r\n"
+
+def decode(content):
+    header, sep, body = content.partition(b"\r\n\r\n")
+    headerContent = header.decode().split("\r\n")
+    head = headerContent.pop(0)
+    headerDist = {}
+    for key in headerContent:
+        headerKey, sep, headerCon = key.partition(":")
+        headerDist[headerKey.strip()] = headerCon.strip()
+    return head, headerDist, body

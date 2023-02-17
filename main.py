@@ -2,6 +2,7 @@ import threading
 import headers
 import socket
 import config
+import files
 
 print("Starting WSHost")
 
@@ -12,8 +13,13 @@ server.listen()
 
 def clientHandler(conn, addr):
     request = conn.recv(config.socket_max_receive_size)
-    response = headers.encode("200 OK", [("Set-Cookie", "test1=test"), ("Set-Cookie", "test2=test")]) + "Hello World!"
-    conn.sendall(response.encode())
+    try:
+        header = headers.decode(request)
+        head = header[0].split(" ")
+        response = files.handleRequest(head)
+    except:
+        response = headers.encode("400 Bad Request", []).encode() + "400 Bad Request".encode()
+    conn.sendall(response)
     conn.close()
 
 address = server.getsockname()
