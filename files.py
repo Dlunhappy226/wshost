@@ -65,11 +65,11 @@ def handleRequest(header):
                 response = headers.encode(status, [
                     ("Content-Length", contentLength),
                     ("Content-Type", type[0]),
-                    ("accept-ranges", "bytes")
+                    ("Accept-Ranges", "bytes")
                 ]).encode() + content
             else:
-                response = headers.encode(status, [(
-                    "Content-Length", contentLength),
+                response = headers.encode(status, [
+                    ("Content-Length", contentLength),
                     ("Content-Type", type[0])
                 ]).encode() + content
     else:
