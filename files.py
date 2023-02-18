@@ -57,18 +57,19 @@ def handleRequest(header):
         if status == "307 Temporary Redirect":
             response = headers.encode(status, [("Location", header[1] + "/")]).encode()
         else:
+            contentLength = str(len(content))
             if header[0] == "HEAD":
                 content = b""
             type = fileType[filenameType]
             if type[1]:
                 response = headers.encode(status, [
-                    ("Content-Length", str(len(content))),
+                    ("Content-Length", contentLength),
                     ("Content-Type", type[0]),
                     ("accept-ranges", "bytes")
                 ]).encode() + content
             else:
                 response = headers.encode(status, [(
-                    "Content-Length", str(len(content))),
+                    "Content-Length", contentLength),
                     ("Content-Type", type[0])
                 ]).encode() + content
     else:
