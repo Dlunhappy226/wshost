@@ -22,17 +22,18 @@ id = 0
 
 class websocket:
     def __init__(self, conn, request):
+        global id
         self.conn = conn
         self.id = id
         id = id + 1
         header = headers.decode(request)
-        if "Sec-WebSocket-Key" not in header:
+        if "Sec-WebSocket-Key" not in header[1]:
             response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
             conn.sendall(response)
-            return False
+            return None
         
-        websocketKey = self.generateKey(header["Sec-WebSocket-Key"])
-        response = headers.encode([
+        websocketKey = self.generateKey(header[1]["Sec-WebSocket-Key"])
+        response = headers.encode("101 Switching Protocols", [
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", websocketKey)
@@ -40,7 +41,7 @@ class websocket:
         conn.sendall(response.encode())
 
     def generateKey(self, key):
-        keyHash = hashlib.sha1(key + GUID)
+        keyHash = hashlib.sha1((key + GUID).encode())
         keyEncode = base64.b64encode(keyHash.digest())
         return keyEncode.decode()
     
@@ -88,13 +89,17 @@ class websocket:
         return message, opCode
     
     def send(self, content, opCode):
-        self.conn.sendall(self.decode(content, opCode))
+        self.conn.sendall(self.encode(content, opCode))
+
+    def close(self):
+        self.send("", opcode_close)
+        self.conn.close()
     
     def run_forever(self):
         while True:
             try:
                 message = self.conn.recv(config.socket_max_receive_size)
-                content, opCode = websocket.decode(message)
+                content, opCode = self.decode(message)
 
                 if opCode == opcode_text:
                     self.onmessage(self, content)
