@@ -53,19 +53,28 @@ def handleRequest(header):
         status = "404 Not Found"
         filenameType = "html"
     
-    if status == "307 Temporary Redirect":
-        response = headers.encode(status, [("Location", header[1] + "/")]).encode()
-    else:
-        type = fileType[filenameType]
-        if type[1]:
-            response = headers.encode(status, [
-                ("Content-Length", str(len(content))),
-                ("Content-Type", type[0]),
-                ("accept-ranges", "bytes")
-            ]).encode() + content
+    if header[0] == "GET" or header[0] == "POST" or header[0] == "HEAD":
+        if status == "307 Temporary Redirect":
+            response = headers.encode(status, [("Location", header[1] + "/")]).encode()
         else:
-            response = headers.encode(status, [(
-                "Content-Length", str(len(content))),
-                ("Content-Type", type[0])
-            ]).encode() + content
+            if header[0] == "HEAD":
+                content = b""
+            type = fileType[filenameType]
+            if type[1]:
+                response = headers.encode(status, [
+                    ("Content-Length", str(len(content))),
+                    ("Content-Type", type[0]),
+                    ("accept-ranges", "bytes")
+                ]).encode() + content
+            else:
+                response = headers.encode(status, [(
+                    "Content-Length", str(len(content))),
+                    ("Content-Type", type[0])
+                ]).encode() + content
+    else:
+        response = headers.encode(status, [
+            ("Content-Length", "151"),
+            ("Content-Type", "text/html"),
+        ]).encode() + read(config.root_directory + "/405.html")
+
     return response
