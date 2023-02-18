@@ -48,7 +48,10 @@ def clientHandler(conn, addr):
         if not scriptFound:
             response = files.handleRequest(head)
     except:
-        response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
+        response = headers.encode("400 Bad Request", [
+            ("Content-Length", "155"),
+            ("Content-Type", "text/html")
+        ]).encode() + files.read(config.root_directory + "/400.html")
     if not scriptFound:
         conn.sendall(response)
     conn.close()
