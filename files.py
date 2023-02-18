@@ -73,7 +73,7 @@ def handleRequest(header):
                     ("Content-Type", type[0])
                 ]).encode() + content
     else:
-        response = headers.encode(status, [
+        response = headers.encode("405 Method Not Allowed", [
             ("Content-Length", "167"),
             ("Content-Type", "text/html"),
         ]).encode() + read(config.root_directory + "/405.html")
