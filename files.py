@@ -73,7 +73,7 @@ def handleRequest(header):
                 ]).encode() + content
     else:
         response = headers.encode(status, [
-            ("Content-Length", "151"),
+            ("Content-Length", "167"),
             ("Content-Type", "text/html"),
         ]).encode() + read(config.root_directory + "/405.html")
 
