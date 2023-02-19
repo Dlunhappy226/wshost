@@ -112,7 +112,7 @@ class websocket:
 
             except:
                 self.conn.close()
-                self.onclose(self)
+                self.onclose()
                 break
 
     def onmessage(self, message):
