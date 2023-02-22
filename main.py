@@ -1,5 +1,6 @@
 import traceback
 import threading
+import fnmatch
 import headers
 import socket
 import config
@@ -20,20 +21,7 @@ def clientHandler(conn, addr):
         head = header[0].split(" ")
         head[1] = head[1].partition("?")[0]
         for key in config.custom_script:
-            if "*" in key:
-                if key.split("*")[0] in head[1]:
-                    try:
-                        config.custom_script[key]({"conn": conn, "addr": addr, "content": request})
-                    except:
-                        traceback.print_exc()
-                        response = headers.encode("500 Internal Server Error", [
-                            ("Content-Length", "173"),
-                            ("Content-Type", "text/html")
-                        ]).encode() + files.read(config.root_directory + "/500.html")
-                        conn.sendall(response)
-                    scriptFound = True
-                    break
-            elif key == head[1]:
+            if fnmatch.fnmatch(head[1], key):
                 try:
                     config.custom_script[key]({"conn": conn, "addr": addr, "content": request})
                 except:
