@@ -12,6 +12,6 @@ root_directory = "html"
 
 import test
 
-custom_script = {
+routing = {
     "/test": test.test
 }

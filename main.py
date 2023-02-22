@@ -20,10 +20,10 @@ def clientHandler(conn, addr):
         header = headers.decode(request)
         head = header[0].split(" ")
         head[1] = head[1].partition("?")[0]
-        for key in config.custom_script:
+        for key in config.routing:
             if fnmatch.fnmatch(head[1], key):
                 try:
-                    config.custom_script[key]({"conn": conn, "addr": addr, "content": request})
+                    config.routing[key]({"conn": conn, "addr": addr, "content": request})
                 except:
                     traceback.print_exc()
                     response = headers.encode("500 Internal Server Error", [
