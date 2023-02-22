@@ -8,7 +8,7 @@ socket_max_receive_size = 4096
 #File config
 root_directory = "html"
 
-#Custom script
+#Routing
 
 import test
 
