@@ -1,9 +1,9 @@
 def decode(content, separator):
     splited = content.split(separator)
-    decoded = []
+    decoded = {}
     for x in splited:
         key, sep, value = x.partition("=")
-        decoded.append((key.strip(), value.strip()))
+        decoded[key.strip()] = value.strip()
     return decoded
 
 def header_decode(content):
