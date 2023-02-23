@@ -1,5 +1,5 @@
-def decode(content, seperator):
-    splited = content.split(seperator)
+def decode(content, separator):
+    splited = content.split(separator)
     decoded = []
     for x in splited:
         key, sep, value = x.partition("=")
