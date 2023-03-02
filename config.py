@@ -10,7 +10,5 @@ root_directory = "html"
 
 #Routing
 
-import test
-
 routing = {
 }
