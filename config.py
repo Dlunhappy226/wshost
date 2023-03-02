@@ -3,7 +3,7 @@ host = ""
 port = 8000
 
 #Server config
-socket_max_receive_size = 4096
+socket_max_receive_size = 65535
 
 #File config
 root_directory = "html"

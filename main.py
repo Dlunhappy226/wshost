@@ -10,8 +10,9 @@ print("Starting WSHost")
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
 server.bind((config.host, config.port))
-server.listen()
+server.listen(1)
 
 def clientHandler(conn, addr):
     request = conn.recv(config.socket_max_receive_size)
