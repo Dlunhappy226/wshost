@@ -13,5 +13,4 @@ root_directory = "html"
 import test
 
 routing = {
-    "/test": test.test
 }
