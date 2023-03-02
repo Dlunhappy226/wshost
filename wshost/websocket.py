@@ -1,8 +1,7 @@
 import hashlib
-import headers
+import wshost.headers as headers
 import base64
 import struct
-import config
 
 fin = 0x80
 opcode = 0x0f
@@ -21,11 +20,12 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 id = 0
 
 class websocket:
-    def __init__(self, conn, request):
+    def __init__(self, conn, request, max_size=131072):
         global id
         self.conn = conn
         self.id = id
         id = id + 1
+        self.maxSize = max_size
         header = headers.decode(request)
         if "Sec-WebSocket-Key" not in header[1]:
             response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
@@ -98,7 +98,7 @@ class websocket:
     def run_forever(self):
         while True:
             try:
-                message = self.conn.recv(config.socket_max_receive_size)
+                message = self.conn.recv(self.maxSize)
                 content, opCode = self.decode(message)
 
                 if opCode == opcode_text:

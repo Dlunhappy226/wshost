@@ -1,4 +1,4 @@
-import headers
+import wshost.headers as headers
 import config
 import os
 

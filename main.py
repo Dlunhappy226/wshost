@@ -1,10 +1,10 @@
+from wshost import headers
+from wshost import files
 import traceback
 import threading
 import fnmatch
-import headers
 import socket
 import config
-import files
 
 print("Starting WSHost")
 
