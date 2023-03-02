@@ -4,7 +4,7 @@ VERSION = 1.0
 DESCRIPTION = "A python based web server including custom python route."
 
 with open("README.md") as file:
-    README = file
+    README = file.read()
 
 setup(
     name="wshost",
@@ -13,9 +13,15 @@ setup(
     author_email="dlun@dlun.tk",
     description= DESCRIPTION,
     long_description=README,
+    long_description_content_type = "text/markdown",
     url="https://github.com/Dlunhappy226/wshost",
     keywords=["web", "http", "server"],
     classifiers=[
         "Programming Language :: Python :: 3 :: Only"
-    ]
+    ],
+    entry_points={
+        "console_scripts": [
+            "wshost = wshost.__main__:main"
+        ]
+    }
 )
