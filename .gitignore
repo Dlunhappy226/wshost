@@ -1,1 +1,4 @@
 __pycache__/
+/dist/
+/build/
+/wshost.egg-info/
