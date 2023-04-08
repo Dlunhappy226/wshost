@@ -24,9 +24,9 @@ def init():
 
 if len(command) < 2:
     print("'wshost init' to init a new wshost project.")
-elif command == "init":
+elif command[1] == "init":
     init()
-elif command == "help":
+elif command[1] == "help":
     print("'wshost init' to init a new wshost project.")
 else:
     print(f"Command: '{command}' not found.\n'wshost help' for help.")

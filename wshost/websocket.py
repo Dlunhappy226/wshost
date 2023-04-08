@@ -1,5 +1,5 @@
+from wshost import headers
 import hashlib
-import wshost.headers as headers
 import base64
 import struct
 

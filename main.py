@@ -35,7 +35,7 @@ def clientHandler(conn, addr):
                 scriptFound = True
                 break
         if not scriptFound:
-            response = files.handleRequest(head)
+            response = files.handleRequest(head, config.root_directory)
     except:
         response = headers.encode("400 Bad Request", [
             ("Content-Length", "155"),

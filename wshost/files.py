@@ -1,5 +1,4 @@
 import wshost.headers as headers
-import config
 import os
 
 fileType = {
@@ -27,20 +26,20 @@ def read(filename):
     file.close()
     return content
 
-def handleRequest(header):
+def handleRequest(header, root):
     
     file = header[1].split("/")
     filename = filename = file[-1]
     try:
         if filename == "":
-            content = read(config.root_directory + header[1] + "index.html")
+            content = read(root + header[1] + "index.html")
             status = "200 OK"
             filenameType = "html"
-        elif os.path.exists(config.root_directory + header[1] + "/"):
+        elif os.path.exists(root + header[1] + "/"):
             content = ""
             status = "307 Temporary Redirect"
         else:
-            content = read(config.root_directory + header[1])
+            content = read(root + header[1])
             status = "200 OK"
             filenameExtension = filename.split(".")
             if filenameExtension[-1] in fileType:
@@ -49,7 +48,7 @@ def handleRequest(header):
                 filenameType = "txt"
 
     except:
-        content = read(config.root_directory + "/404.html")
+        content = read(root + "/404.html")
         status = "404 Not Found"
         filenameType = "html"
     
@@ -76,6 +75,6 @@ def handleRequest(header):
         response = headers.encode("405 Method Not Allowed", [
             ("Content-Length", "167"),
             ("Content-Type", "text/html"),
-        ]).encode() + read(config.root_directory + "/405.html")
+        ]).encode() + read(root + "/405.html")
 
     return response
