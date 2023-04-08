@@ -1,16 +1,12 @@
 import urllib.request
 import sys
 
-command = sys.argv()
+command = sys.argv
 
 fileDownload = {
     "main.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/main.py",
     "config.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/config.py",
     "html/index.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/index.html",
-    "html/400.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/400.html",
-    "html/404.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/404.html",
-    "html/405.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/405.html",
-    "html/500.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/500.html"
 }
 
 def init():
