@@ -27,20 +27,31 @@ def clientHandler(conn, addr):
                     config.routing[key]({"conn": conn, "addr": addr, "content": request})
                 except:
                     traceback.print_exc()
+                    errorMessage = config.error_html.format("500 Internal Server Error", "500 Internal Server Error").encode()
                     response = headers.encode("500 Internal Server Error", [
-                        ("Content-Length", "173"),
+                        ("Content-Length", len(errorMessage)),
                         ("Content-Type", "text/html")
-                    ]).encode() + files.read(config.root_directory + "/500.html")
+                    ]).encode() + errorMessage
                     conn.sendall(response)
                 scriptFound = True
                 break
         if not scriptFound:
-            response = files.handleRequest(head, config.root_directory)
+            try:
+                response = files.handleRequest(head, config.root_directory, config.error_html)
+            except:
+                traceback.print_exc()
+                errorMessage = config.error_html.format("500 Internal Server Error", "500 Internal Server Error").encode()
+                response = headers.encode("500 Internal Server Error", [
+                    ("Content-Length", len(errorMessage)),
+                    ("Content-Type", "text/html")
+                ]).encode() + errorMessage
+                conn.sendall(response)
     except:
+        errorMessage = config.error_html.format("400 Bad Request", "400 Bad Request").encode()
         response = headers.encode("400 Bad Request", [
-            ("Content-Length", "155"),
+            ("Content-Length", len(errorMessage)),
             ("Content-Type", "text/html")
-        ]).encode() + files.read(config.root_directory + "/400.html")
+        ]).encode() + errorMessage
     if not scriptFound:
         conn.sendall(response)
     conn.close()

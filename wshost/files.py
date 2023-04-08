@@ -26,7 +26,7 @@ def read(filename):
     file.close()
     return content
 
-def handleRequest(header, root):
+def handleRequest(header, root, errorhtml):
     
     file = header[1].split("/")
     filename = filename = file[-1]
@@ -48,7 +48,7 @@ def handleRequest(header, root):
                 filenameType = "txt"
 
     except:
-        content = read(root + "/404.html")
+        content = errorhtml.format("404 Not Found", "404 Not Found").encode()
         status = "404 Not Found"
         filenameType = "html"
     
@@ -72,9 +72,10 @@ def handleRequest(header, root):
                     ("Content-Type", type[0])
                 ]).encode() + content
     else:
+        errorMessage = errorhtml.format("405 Method Not Allowed", "405 Method Not Allowed").encode()
         response = headers.encode("405 Method Not Allowed", [
-            ("Content-Length", "167"),
+            ("Content-Length", len(errorMessage)),
             ("Content-Type", "text/html"),
-        ]).encode() + read(root + "/405.html")
+        ]).encode() + errorMessage
 
     return response

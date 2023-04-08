@@ -12,3 +12,13 @@ root_directory = "html"
 
 routing = {
 }
+
+#Error page
+
+error_html = """<html>
+<head><title>{}</title></head>
+<body>
+<center><h1>{}</h1></center>
+<hr><center>WSHost/1.0</center>
+</body>
+</html>"""
