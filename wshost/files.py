@@ -1,7 +1,8 @@
 import wshost.headers as headers
 import os
 
-fileType = {
+
+file_type = {
     "css": ("text/css", False),
     "html": ("text/html", False),
     "js": ("text/javascript", False),
@@ -26,56 +27,56 @@ def read(filename):
     file.close()
     return content
 
-def handleRequest(header, root, errorhtml):
-    
+def handle_request(header, root, error_html):
     file = header[1].split("/")
-    filename = filename = file[-1]
+    filename = file[-1]
     try:
         if filename == "":
             content = read(root + header[1] + "index.html")
             status = "200 OK"
-            filenameType = "html"
+            filename_type = "html"
         elif os.path.exists(root + header[1] + "/"):
             content = ""
-            status = "307 Temporary Redirect"
+            status = "200 OK"
         else:
             content = read(root + header[1])
             status = "200 OK"
-            filenameExtension = filename.split(".")
-            if filenameExtension[-1] in fileType:
-                filenameType = filenameExtension[-1]
+            filename_extension = filename.split(".")
+            if filename_extension[-1] in file_type:
+                filename_type = filename_extension[-1]
             else:
-                filenameType = "txt"
+                filename_type = "txt"
 
     except:
-        content = errorhtml.format("404 Not Found", "404 Not Found").encode()
+        content = error_html.format("404 Not Found", "404 Not Found").encode()
         status = "404 Not Found"
-        filenameType = "html"
+        filename_type = "html"
     
     if header[0] == "GET" or header[0] == "POST" or header[0] == "HEAD":
         if status == "307 Temporary Redirect":
             response = headers.encode(status, [("Location", header[1] + "/")]).encode()
         else:
-            contentLength = str(len(content))
+            content_length = str(len(content))
             if header[0] == "HEAD":
                 content = b""
-            type = fileType[filenameType]
+
+            type = file_type[filename_type]
             if type[1]:
                 response = headers.encode(status, [
-                    ("Content-Length", contentLength),
+                    ("Content-Length", content_length),
                     ("Content-Type", type[0]),
                     ("Accept-Ranges", "bytes")
                 ]).encode() + content
             else:
                 response = headers.encode(status, [
-                    ("Content-Length", contentLength),
+                    ("Content-Length", content_length),
                     ("Content-Type", type[0])
                 ]).encode() + content
     else:
-        errorMessage = errorhtml.format("405 Method Not Allowed", "405 Method Not Allowed").encode()
+        error_message = error_html.format("405 Method Not Allowed", "405 Method Not Allowed").encode()
         response = headers.encode("405 Method Not Allowed", [
-            ("Content-Length", len(errorMessage)),
+            ("Content-Length", len(error_message)),
             ("Content-Type", "text/html"),
-        ]).encode() + errorMessage
+        ]).encode() + error_message
 
     return response

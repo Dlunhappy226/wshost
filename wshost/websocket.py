@@ -3,6 +3,7 @@ import hashlib
 import base64
 import struct
 
+
 fin = 0x80
 opcode = 0x0f
 length = 0x7f
@@ -20,94 +21,94 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 id = 0
 
 class websocket:
-    def __init__(self, conn, request, max_size=131072):
+    def __init__(self, conn, request, max_size=1000000):
         global id
         self.conn = conn
         self.id = id
         id = id + 1
-        self.maxSize = max_size
+        self.max_size = max_size
         header = headers.decode(request)
         if "Sec-WebSocket-Key" not in header[1]:
             response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
             conn.sendall(response)
             return None
         
-        websocketKey = self.generateKey(header[1]["Sec-WebSocket-Key"])
+        websocket_key = self.generate_key(header[1]["Sec-WebSocket-Key"])
         response = headers.encode("101 Switching Protocols", [
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
-            ("Sec-WebSocket-Accept", websocketKey)
+            ("Sec-WebSocket-Accept", websocket_key)
         ])
         conn.sendall(response.encode())
 
-    def generateKey(self, key):
-        keyHash = hashlib.sha1((key + GUID).encode())
-        keyEncode = base64.b64encode(keyHash.digest())
-        return keyEncode.decode()
+    def generate_key(self, key):
+        key_hash = hashlib.sha1((key + GUID).encode())
+        key_encode = base64.b64encode(key_hash.digest())
+        return key_encode.decode()
     
-    def encode(self, content, opCode):
+    def encode(self, content, op_code):
         header = bytearray()
-        contentLength = len(content)
+        content_length = len(content)
         
-        if contentLength <= 125:
-            header.append(fin | opCode)
-            header.append(contentLength)
-        elif 126 <= contentLength <= 65535:
-            header.append(fin | opCode)
+        if content_length <= 125:
+            header.append(fin | op_code)
+            header.append(content_length)
+        elif 126 <= content_length <= 65535:
+            header.append(fin | op_code)
             header.append(len_16)
-            header.extend(struct.pack(">H", contentLength))
-        elif contentLength < 18446744073709551616:
-            header.append(fin | opCode)
+            header.extend(struct.pack(">H", content_length))
+        elif content_length < 18446744073709551616:
+            header.append(fin | op_code)
             header.append(len_64)
-            header.extend(struct.pack(">Q", contentLength))
+            header.extend(struct.pack(">Q", content_length))
         else:
             return
         
         return header + content
     
     def decode(self, content):
-        opCode = content[0] & opcode
-        contentLength = content[1] & length
+        op_code = content[0] & opcode
+        content_length = content[1] & length
 
-        if contentLength == 126:
-            contentLength = struct.unpack(">H", content[3:5])[0]
+        if content_length == 126:
+            content_length = struct.unpack(">H", content[3:5])[0]
             masks = content[6:10]
-            contentRead = content[10:10 + contentLength]
-        elif contentLength == 127:
-            contentLength = struct.unpack(">Q", content[3:11])[0]
+            content_read = content[10:10 + content_length]
+        elif content_length == 127:
+            content_length = struct.unpack(">Q", content[3:11])[0]
             masks = content[12:16]
-            contentRead = content[16:16 + contentLength]
+            content_read = content[16:16 + content_length]
         else:
             masks = content[2:6]
-            contentRead = content[6:6+contentLength]
+            content_read = content[6:6+content_length]
 
         message = bytearray()
-        for x in contentRead:
+        for x in content_read:
             x ^= masks[len(message) % 4]
             message.append(x)
 
-        return message, opCode
+        return message, op_code
     
-    def send(self, content, opCode):
-        self.conn.sendall(self.encode(content, opCode))
+    def send(self, content, op_code):
+        self.conn.sendall(self.encode(content, op_code))
 
     def close(self):
-        self.send("", opcode_close)
+        self.sendall("", opcode_close)
         self.conn.close()
     
     def run_forever(self):
         while True:
             try:
-                message = self.conn.recv(self.maxSize)
-                content, opCode = self.decode(message)
+                message = self.conn.recv(self.max_size)
+                content, op_code = self.decode(message)
 
-                if opCode == opcode_text:
+                if op_code == opcode_text:
                     self.onmessage(self, content)
-                elif opCode == opcode_close:
+                elif op_code == opcode_close:
                     self.conn.close()
                     self.onclose(self)
                     break
-                elif opCode == opcode_ping:
+                elif op_code == opcode_ping:
                     self.send(content, opcode_pong)
 
             except:

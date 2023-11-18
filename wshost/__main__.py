@@ -3,7 +3,7 @@ import sys
 
 command = sys.argv
 
-fileDownload = {
+file_download = {
     "main.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/main.py",
     "config.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/config.py",
     "html/index.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/index.html",
@@ -11,8 +11,8 @@ fileDownload = {
 
 def init():
     print("Initing wshost project.")
-    for x in fileDownload:
-        data = urllib.request.urlopen(fileDownload[x])
+    for x in file_download:
+        data = urllib.request.urlopen(file_download[x])
         file = open(x, "wb+")
         file.write(data.read())
         file.close
