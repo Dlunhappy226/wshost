@@ -13,7 +13,8 @@ setup(
     author_email="dlun@dlun.tk",
     description= DESCRIPTION,
     long_description=README,
-    long_description_content_type = "text/markdown",
+    long_description_content_type="text/markdown",
+    packages=find_packages(),
     url="https://github.com/Dlunhappy226/wshost",
     keywords=["web", "http", "server"],
     classifiers=[
