@@ -1,5 +1,7 @@
 import urllib.request
 import sys
+import os
+
 
 command = sys.argv
 
@@ -11,6 +13,8 @@ file_download = {
 
 def init():
     print("Initing wshost project.")
+    if not os.path.exists("html"):
+        os.makedirs("html")
     for x in file_download:
         data = urllib.request.urlopen(file_download[x])
         file = open(x, "wb+")
@@ -27,4 +31,3 @@ def main():
         print("'wshost init' to init a new wshost project.")
     else:
         print(f"Command: '{command}' not found.\n'wshost help' for help.")
-        
