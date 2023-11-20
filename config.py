@@ -1,9 +1,6 @@
 #Socket binding address
-host = ""
+host = "0.0.0.0"
 port = 8000
-
-#Server config
-socket_max_receive_size = 1000000
 
 #File config
 root_directory = "html"
@@ -22,3 +19,6 @@ error_html = """<html>
 <hr><center>WSHost/1.0</center>
 </body>
 </html>"""
+
+#Debug
+debug = True

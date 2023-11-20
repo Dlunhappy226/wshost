@@ -21,20 +21,22 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 id = 0
 
 class websocket:
-    def __init__(self, conn, request, max_size=1000000):
+    def __init__(self, conn, request, max_size=65536):
         global id
         self.conn = conn
         self.id = id
         id = id + 1
         self.max_size = max_size
-        header = headers.decode(request)
-        if "Sec-WebSocket-Key" not in header[1]:
-            response = headers.encode("400 Bad Request", []).encode() + b"400 Bad Request"
+        head, header, body = headers.decode(request)
+
+        if "Sec-WebSocket-Key" not in header:
+            response = headers.encode(headers.BAD_REQUEST, []).encode() + headers.BAD_REQUEST
             conn.sendall(response)
-            return None
+            return
         
-        websocket_key = self.generate_key(header[1]["Sec-WebSocket-Key"])
-        response = headers.encode("101 Switching Protocols", [
+        websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
+
+        response = headers.encode(headers.SWITCHING_PROTOCOLS, [
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", websocket_key)

@@ -4,6 +4,7 @@ def decode(content, separator):
     for x in splited:
         key, sep, value = x.partition("=")
         decoded[key.strip()] = value.strip()
+
     return decoded
 
 def header_decode(content):
@@ -12,6 +13,7 @@ def header_decode(content):
     for x in splited:
         key, sep, value = x.partition("=")
         decoded[key.strip()] = value.strip(' " ')
+
     return decoded
 
 def content_decode(content):
@@ -21,6 +23,7 @@ def content_decode(content):
     for key in header_content:
         header_key, sep, header_con = key.partition(":")
         header_dist[header_key.strip()] = header_con.strip()
+
     return header_dist, body
 
 def form_decode(content):
@@ -34,4 +37,5 @@ def multiform_decode(boundary, body):
     for x in content:
         header, content_body = content_decode(x)
         form_content.append((header, content_body))
+        
     return form_content

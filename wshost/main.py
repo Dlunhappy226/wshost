@@ -33,44 +33,60 @@ class app:
             client_thread = threading.Thread(target=self.client_handler, args=(conn, addr))
             client_thread.start()
 
+
     def client_handler(self, conn, addr):
-        request = conn.recv(self.config.socket_max_receive_size)
+        while True:
+            if self.request_handle(conn, addr) == False:
+                conn.close()
+                break
+
+    def request_handle(self, conn, addr):
         script_found = False
+
+        request = conn.recv(65537)
+
+        if request == b"":
+            return False
+
+        if request == b"\r\n":
+            return
+        
+        if len(request) > 65536:
+            conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
+            return
+
         try:
             header = headers.decode(request)
-            head = header[0].split(" ")
-            head[1] = head[1].partition("?")[0]
+            method, path, protocol = headers.head_decode(header[0])
+            request_path, parameter = headers.path_decode(path)
+
+            if protocol.lower() != "http/1.1":
+                conn.sendall(files.generate_error_message(headers.BAD_REQUEST, self.config.error_html))
+                return False
+
             for key in self.config.routing:
-                if fnmatch.fnmatch(head[1], key):
+                if fnmatch.fnmatch(request_path, key):
                     try:
                         self.config.routing[key]({"conn": conn, "addr": addr, "content": request})
                     except:
-                        traceback.print_exc()
-                        error_message = self.config.error_html.format("500 Internal Server Error", "500 Internal Server Error").encode()
-                        response = headers.encode("500 Internal Server Error", [
-                            ("Content-Length", len(error_message)),
-                            ("Content-Type", "text/html")
-                        ]).encode() + error_message
+                        if self.config.debug:
+                            traceback.print_exc()
+                        response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
                         conn.sendall(response)
+                        
                     script_found = True
                     break
+
             if not script_found:
                 try:
-                    response = files.handle_request(head, self.config.root_directory, self.config.error_html)
+                    response = files.handle_request(method, request_path, self.config.root_directory, self.config.error_html)
                 except:
-                    traceback.print_exc()
-                    error_message = self.config.error_html.format("500 Internal Server Error", "500 Internal Server Error").encode()
-                    response = headers.encode("500 Internal Server Error", [
-                        ("Content-Length", len(error_message)),
-                        ("Content-Type", "text/html")
-                    ]).encode() + error_message
-                    conn.sendall(response)
+                    if self.config.debug:
+                        traceback.print_exc()
+                    response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
+                conn.sendall(response)
         except:
-            error_message = self.config.error_html.format("400 Bad Request", "400 Bad Request").encode()
-            response = headers.encode("400 Bad Request", [
-                ("Content-Length", len(error_message)),
-                ("Content-Type", "text/html")
-            ]).encode() + error_message
-        if not script_found:
+            response = files.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
             conn.sendall(response)
-        conn.close()
+            return False
+        return

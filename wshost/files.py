@@ -1,25 +1,7 @@
 import wshost.headers as headers
+import mimetypes
 import os
 
-
-file_type = {
-    "css": ("text/css", False),
-    "html": ("text/html", False),
-    "js": ("text/javascript", False),
-    "apng": ("image/apng", True),
-    "avif": ("image/avif", True),
-    "gif": ("image/gif", True),
-    "jpg": ("image/jpeg", True),
-    "png": ("image/png", True),
-    "svg": ("image/svg+xml", False),
-    "webp": ("image/webp", True),
-    "wav": ("audio/wave", True),
-    "webm": ("video/webm", True),
-    "ogg": ("video/ogg", True),
-    "mp4": ("video/mp4", True),
-    "mp3": ("audio/mpeg", True),
-    "txt": ("text/plain", False),
-}
 
 def read(filename):
     file = open(filename, "rb")
@@ -27,56 +9,77 @@ def read(filename):
     file.close()
     return content
 
-def handle_request(header, root, error_html):
-    file = header[1].split("/")
+def handle_request(method, path, root, error_html):
+    file = path.split("/")
     filename = file[-1]
-    try:
-        if filename == "":
-            content = read(root + header[1] + "index.html")
-            status = "200 OK"
-            filename_type = "html"
-        elif os.path.exists(root + header[1] + "/"):
-            content = ""
-            status = "200 OK"
-        else:
-            content = read(root + header[1])
-            status = "200 OK"
-            filename_extension = filename.split(".")
-            if filename_extension[-1] in file_type:
-                filename_type = filename_extension[-1]
-            else:
-                filename_type = "txt"
-
-    except:
-        content = error_html.format("404 Not Found", "404 Not Found").encode()
-        status = "404 Not Found"
-        filename_type = "html"
+    method = method.lower()
     
-    if header[0] == "GET" or header[0] == "POST" or header[0] == "HEAD":
-        if status == "307 Temporary Redirect":
-            response = headers.encode(status, [("Location", header[1] + "/")]).encode()
-        else:
-            content_length = str(len(content))
-            if header[0] == "HEAD":
-                content = b""
+    if method == "get" or method == "post" or method == "head":
+        try:
+            if filename == "":
+                content = read(root + path + "index.html")
+                status = headers.OK
+                content_type = "text/html"
 
-            type = file_type[filename_type]
-            if type[1]:
-                response = headers.encode(status, [
-                    ("Content-Length", content_length),
-                    ("Content-Type", type[0]),
-                    ("Accept-Ranges", "bytes")
-                ]).encode() + content
+            elif os.path.exists(root + path + "/"):
+                content = b""
+                status = "307 Temporary Redirect"
+                response = headers.encode(status, [("Location", path + "/")]).encode()
+                content_type = ""
+
             else:
-                response = headers.encode(status, [
+                content = read(root + path)
+                status = headers.OK
+                content_type = mimetypes.guess_type(filename)[0]
+                if content_type == None:
+                    content_type = "text/plain"
+
+        except:
+            content = error_html.format(headers.NOT_FOUND, headers.NOT_FOUND).encode()
+            status = headers.NOT_FOUND
+            content_type = "text/html"
+        
+        content_length = str(len(content))
+
+        if method == "head":
+            content = b""
+
+        if content_type != "":
+            try:
+                content.decode()
+                header = [
+                    ("Content-Type", content_type),
                     ("Content-Length", content_length),
-                    ("Content-Type", type[0])
-                ]).encode() + content
+                    ("Connection", "keep-alive")
+                ]
+            except UnicodeDecodeError:
+                header = [
+                    ("Content-Type", content_type),
+                    ("Content-Length", content_length),
+                    ("Accept-Ranges", "bytes"),
+                    ("Connection", "keep-alive")
+                ]
+        else:
+            header = [
+                ("Connection", "keep-alive")
+            ]
+        
+        response = headers.encode(status, header).encode() + content
     else:
-        error_message = error_html.format("405 Method Not Allowed", "405 Method Not Allowed").encode()
-        response = headers.encode("405 Method Not Allowed", [
-            ("Content-Length", len(error_message)),
-            ("Content-Type", "text/html"),
-        ]).encode() + error_message
+        response = generate_error_message(headers.METHOD_NOT_ALLOWED, error_html)
+
+    return response
+
+def generate_error_message(error, error_html):
+    if error != headers.BAD_REQUEST:
+        connection = "keep-alive"
+    else:
+        connection = "close"
+    error_message = error_html.format(error, error).encode()
+    response = headers.encode(headers.METHOD_NOT_ALLOWED, [
+        ("Content-Length", len(error_message)),
+        ("Content-Type", "text/html"),
+        ("Connection", connection)
+    ]).encode() + error_message
 
     return response
