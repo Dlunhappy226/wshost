@@ -41,21 +41,21 @@ class app:
                 break
 
     def request_handle(self, conn, addr):
-        script_found = False
-
-        request = conn.recv(65537)
-
-        if request == b"":
-            return False
-
-        if request == b"\r\n":
-            return
-        
-        if len(request) > 65536:
-            conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
-            return
-
         try:
+            script_found = False
+
+            request = conn.recv(65537)
+
+            if request == b"":
+                return False
+
+            if request == b"\r\n":
+                return
+            
+            if len(request) > 65536:
+                conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
+                return
+
             header = headers.decode(request)
             method, path, protocol = headers.head_decode(header[0])
             request_path, parameter = headers.path_decode(path)
@@ -67,7 +67,8 @@ class app:
             for key in self.config.routing:
                 if fnmatch.fnmatch(request_path, key):
                     try:
-                        self.config.routing[key]({"conn": conn, "addr": addr, "content": request})
+                        response = self.config.routing[key]({"conn": conn, "addr": addr, "content": request})
+                        return response
                     except:
                         if self.config.debug:
                             traceback.print_exc()

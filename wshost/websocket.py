@@ -1,4 +1,5 @@
 from wshost import headers
+import traceback
 import hashlib
 import base64
 import struct
@@ -21,12 +22,13 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 id = 0
 
 class websocket:
-    def __init__(self, conn, request, max_size=65536):
+    def __init__(self, conn, request, max_size=65536, debug=False):
         global id
         self.conn = conn
         self.id = id
         id = id + 1
         self.max_size = max_size
+        self.debug = debug
         head, header, body = headers.decode(request)
 
         if "Sec-WebSocket-Key" not in header:
@@ -91,7 +93,7 @@ class websocket:
 
         return message, op_code
     
-    def send(self, content, op_code):
+    def send(self, content, op_code=opcode_text):
         self.conn.sendall(self.encode(content, op_code))
 
     def close(self):
@@ -109,14 +111,16 @@ class websocket:
                 elif op_code == opcode_close:
                     self.conn.close()
                     self.onclose(self)
-                    break
+                    return
                 elif op_code == opcode_ping:
                     self.send(content, opcode_pong)
 
             except:
+                if self.debug:
+                    traceback.print_exc()
                 self.conn.close()
                 self.onclose()
-                break
+                return
 
     def onmessage(self, message):
         pass
