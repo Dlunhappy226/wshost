@@ -34,6 +34,12 @@ def sendall(content, except_for="", op_code=opcode_text):
 
 class Websocket:
     def __init__(self, request, max_size=65536, debug=False):
+        def onmessage(self, message):
+            pass
+
+        def onclose(self):
+            pass
+
         global id
         self.conn = request["conn"]
         self.id = id
@@ -41,6 +47,8 @@ class Websocket:
         self.max_size = max_size
         self.debug = debug
         head, header, body = headers.decode(request["content"])
+        self.onmessage = onmessage
+        self.onclose = onclose
         
         if "Sec-WebSocket-Key" in header:
             websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
@@ -145,9 +153,3 @@ class Websocket:
                 clients.remove(self)
                 self.onclose(self)
                 return
-
-    def onmessage(self, message):
-        pass
-
-    def onclose(self):
-        pass

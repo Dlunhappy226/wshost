@@ -73,7 +73,10 @@ class App:
                         if self.config.debug:
                             traceback.print_exc()
                         response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
-                        conn.sendall(response)
+                        try:
+                            conn.sendall(response)
+                        except:
+                            pass
                         
                     script_found = True
                     break
@@ -85,9 +88,15 @@ class App:
                     if self.config.debug:
                         traceback.print_exc()
                     response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
-                conn.sendall(response)
+                try:
+                    conn.sendall(response)
+                except:
+                    pass
         except:
             response = files.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
-            conn.sendall(response)
+            try:
+                conn.sendall(response)
+            except:
+                pass
             return False
         return
