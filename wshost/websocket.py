@@ -30,11 +30,6 @@ class websocket:
         self.max_size = max_size
         self.debug = debug
         head, header, body = headers.decode(request)
-
-        if "Sec-WebSocket-Key" not in header:
-            response = headers.encode(headers.BAD_REQUEST, []).encode() + headers.BAD_REQUEST
-            conn.sendall(response)
-            return
         
         websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
 
@@ -119,7 +114,7 @@ class websocket:
                 if self.debug:
                     traceback.print_exc()
                 self.conn.close()
-                self.onclose()
+                self.onclose(self)
                 return
 
     def onmessage(self, message):
