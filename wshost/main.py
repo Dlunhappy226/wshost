@@ -7,7 +7,7 @@ import socket
 import sys
 
 
-class app:
+class App:
     def __init__(self, config):
         print("Starting WSHost")
         self.config = config

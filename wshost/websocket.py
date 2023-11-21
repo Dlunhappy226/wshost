@@ -21,15 +21,26 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 id = 0
 
-class websocket:
-    def __init__(self, conn, request, max_size=65536, debug=False):
+clients = []
+
+def sendall(content, except_for="", op_code=opcode_text):
+    for client in clients:
+        if client != except_for:
+            try:
+                client.send(content, op_code=op_code)
+            except:
+                client.close()
+
+
+class Websocket:
+    def __init__(self, request, max_size=65536, debug=False):
         global id
-        self.conn = conn
+        self.conn = request["conn"]
         self.id = id
         id = id + 1
         self.max_size = max_size
         self.debug = debug
-        head, header, body = headers.decode(request)
+        head, header, body = headers.decode(request["content"])
         
         if "Sec-WebSocket-Key" in header:
             websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
@@ -41,7 +52,9 @@ class websocket:
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", websocket_key)
         ])
-        conn.sendall(response.encode())
+
+        self.conn.sendall(response.encode())
+        clients.append(self)
 
     def generate_key(self, key):
         key_hash = hashlib.sha1((key + GUID).encode())
@@ -97,6 +110,8 @@ class websocket:
     def close(self):
         self.sendall("", opcode_close)
         self.conn.close()
+        clients.remove(self)
+        self.onclose(self)
     
     def run_forever(self):
         while True:
@@ -105,6 +120,7 @@ class websocket:
 
                 if message == b"":
                     self.conn.close()
+                    clients.remove(self)
                     self.onclose(self)
                     return
 
@@ -112,10 +128,13 @@ class websocket:
 
                 if op_code == opcode_text:
                     self.onmessage(self, content)
+
                 elif op_code == opcode_close:
                     self.conn.close()
+                    clients.remove(self)
                     self.onclose(self)
                     return
+                
                 elif op_code == opcode_ping:
                     self.send(content, opcode_pong)
 
@@ -123,6 +142,7 @@ class websocket:
                 if self.debug:
                     traceback.print_exc()
                 self.conn.close()
+                clients.remove(self)
                 self.onclose(self)
                 return
 
