@@ -31,7 +31,10 @@ class websocket:
         self.debug = debug
         head, header, body = headers.decode(request)
         
-        websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
+        if "Sec-WebSocket-Key" in header:
+            websocket_key = self.generate_key(header["Sec-WebSocket-Key"])
+        else:
+            websocket_key = self.generate_key(header["Sec-Websocket-Key"])
 
         response = headers.encode(headers.SWITCHING_PROTOCOLS, [
             ("Upgrade", "websocket"),
@@ -70,13 +73,13 @@ class websocket:
         content_length = content[1] & length
 
         if content_length == 126:
-            content_length = struct.unpack(">H", content[3:5])[0]
-            masks = content[6:10]
-            content_read = content[10:10 + content_length]
+            content_length = struct.unpack(">H", content[2:4])[0]
+            masks = content[4:8]
+            content_read = content[8:8+content_length]
         elif content_length == 127:
-            content_length = struct.unpack(">Q", content[3:11])[0]
-            masks = content[12:16]
-            content_read = content[16:16 + content_length]
+            content_length = struct.unpack(">Q", content[2:10])[0]
+            masks = content[10:14]
+            content_read = content[14:14+content_length]
         else:
             masks = content[2:6]
             content_read = content[6:6+content_length]
@@ -99,6 +102,12 @@ class websocket:
         while True:
             try:
                 message = self.conn.recv(self.max_size)
+
+                if message == b"":
+                    self.conn.close()
+                    self.onclose(self)
+                    return
+
                 content, op_code = self.decode(message)
 
                 if op_code == opcode_text:
