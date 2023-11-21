@@ -46,7 +46,7 @@ class Websocket:
         id = id + 1
         self.max_size = max_size
         self.debug = debug
-        head, header, body = headers.decode(request["content"])
+        header = request["header"]
         self.onmessage = onmessage
         self.onclose = onclose
         

@@ -56,8 +56,8 @@ class App:
                 conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
                 return
 
-            header = headers.decode(request)
-            method, path, protocol = headers.head_decode(header[0])
+            head, header, body = headers.decode(request)
+            method, path, protocol = headers.head_decode(head)
             request_path, parameter = headers.path_decode(path)
 
             if protocol.lower() != "http/1.1":
@@ -67,7 +67,18 @@ class App:
             for key in self.config.routing:
                 if fnmatch.fnmatch(request_path, key):
                     try:
-                        response = self.config.routing[key]({"conn": conn, "addr": addr, "content": request})
+                        response = self.config.routing[key]({
+                            "conn": conn,
+                            "addr": addr,
+                            "content": request,
+                            "head": head,
+                            "header": header,
+                            "body": body,
+                            "method": method,
+                            "protocol": protocol,
+                            "path": request_path,
+                            "parameter": parameter
+                        })
                         return response
                     except:
                         if self.config.debug:
