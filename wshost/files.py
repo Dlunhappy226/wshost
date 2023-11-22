@@ -83,3 +83,8 @@ def generate_error_message(error, error_html):
     ]).encode() + error_message
 
     return response
+
+def encode_response(content, status=headers.OK):
+    return headers.encode(status, [
+        ("Content-Length", len(content))
+    ]).encode() + content.encode()

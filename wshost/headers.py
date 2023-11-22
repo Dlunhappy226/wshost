@@ -12,7 +12,7 @@ REQUEST_HEADER_FIELDS_TOO_LARGE = "431 Request Header Fields Too Large"
 INTERNAL_SERVER_ERROR = "500 Internal Server Error"
 
 
-def encode(status, content):
+def encode(status=OK, content=[]):
     utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
     header_content = {}
     header_content["Server"] = "WSHost/1.0"
