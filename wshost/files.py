@@ -88,3 +88,9 @@ def encode_response(content, status=headers.OK):
     return headers.encode(status, [
         ("Content-Length", len(content))
     ]).encode() + content.encode()
+
+def encode_binary_response(content, status=headers.OK):
+    return headers.encode(status, [
+        ("Content-Length", len(content)),
+        ("Accept-Ranges", "bytes"),
+    ]).encode() + content

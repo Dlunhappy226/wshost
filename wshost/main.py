@@ -77,9 +77,24 @@ class App:
                             "method": method,
                             "protocol": protocol,
                             "path": request_path,
-                            "parameter": parameter
+                            "parameter": parameter,
+                            "config": self.config
                         })
-                        return response
+                        
+                        if type(response) == str:
+                            conn.sendall(files.encode_response(response))
+                            return True
+                        
+                        elif type(response) == bytes:
+                            conn.sendall(files.encode_binary_response(response))
+                            return True
+                        
+                        elif type(response) == bool:
+                            return response
+                        
+                        else:
+                            return False
+                        
                     except:
                         if self.config.debug:
                             traceback.print_exc()
