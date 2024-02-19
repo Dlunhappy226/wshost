@@ -1,11 +1,13 @@
 # Wshost
 A python based web server including custom python route.
 
-## Quick start
+## Install
 ```
-git clone https://github.com/Dlunhappy226/wshost.git
+pip install git+https://github.com/Dlunhappy226/wshost
+```
 
-cd wshost
-
-python3 main.py
+## Quick start
+Open create a folder
+```
+wshost init
 ```
