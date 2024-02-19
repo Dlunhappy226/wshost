@@ -9,6 +9,7 @@ file_download = {
     "main.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/main.py",
     "config.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/config.py",
     "html/index.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/index.html",
+    "requirements.txt": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/requirements.txt"
 }
 
 def init():
