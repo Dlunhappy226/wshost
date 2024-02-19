@@ -42,8 +42,6 @@ class App:
 
     def request_handle(self, conn, addr):
         try:
-            script_found = False
-
             request = conn.recv(65537)
 
             if request == b"":
@@ -104,25 +102,31 @@ class App:
                         except:
                             pass
                         
-                    script_found = True
-                    break
+                    return
 
-            if not script_found:
-                try:
-                    response = files.handle_request(method, request_path, self.config.root_directory, self.config.error_html)
-                except:
-                    if self.config.debug:
-                        traceback.print_exc()
-                    response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
-                try:
-                    conn.sendall(response)
-                except:
-                    pass
-        except:
-            response = files.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
+
+            try:
+                response = files.handle_request(method, request_path, self.config.root_directory, self.config.error_html)
+            except:
+                if self.config.debug:
+                    traceback.print_exc()
+                response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
             try:
                 conn.sendall(response)
             except:
                 pass
+
+            return
+
+        except:
+            response = files.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
+
+            try:
+                conn.sendall(response)
+
+            except:
+                pass
+
             return False
+        
         return
