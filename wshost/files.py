@@ -9,10 +9,13 @@ def read(filename):
     file.close()
     return content
 
-def handle_request(method, path, root, error_html):
+def handle_request(request):
+    method = request["method"].lower()
+    path = request["path"]
+    root = request["config"].root_directory
+    error_html = request["config"].error_html
     file = path.split("/")
     filename = file[-1]
-    method = method.lower()
     
     if method == "get" or method == "post" or method == "head":
         try:

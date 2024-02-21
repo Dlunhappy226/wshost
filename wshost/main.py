@@ -38,25 +38,38 @@ class App:
         while True:
             if self.request_handle(conn, addr) == False:
                 conn.close()
-                break
+                return
 
     def request_handle(self, conn, addr):
         try:
-            request = conn.recv(65537)
+            raw_request = conn.recv(65537)
 
-            if request == b"":
+            if raw_request == b"":
                 return False
 
-            if request == b"\r\n":
+            if raw_request == b"\r\n":
                 return
             
-            if len(request) > 65536:
+            if len(raw_request) > 65536:
                 conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
                 return
 
-            head, header, body = headers.decode(request)
+            head, header, body = headers.decode(raw_request)
             method, path, protocol = headers.head_decode(head)
             request_path, parameter = headers.path_decode(path)
+            request = {
+                "conn": conn,
+                "addr": addr,
+                "content": raw_request,
+                "head": head,
+                "header": header,
+                "body": body,
+                "method": method,
+                "protocol": protocol,
+                "path": request_path,
+                "parameter": parameter,
+                "config": self.config
+            }
 
             if protocol.lower() != "http/1.1":
                 conn.sendall(files.generate_error_message(headers.BAD_REQUEST, self.config.error_html))
@@ -65,19 +78,7 @@ class App:
             for key in self.config.routing:
                 if fnmatch.fnmatch(request_path, key):
                     try:
-                        response = self.config.routing[key]({
-                            "conn": conn,
-                            "addr": addr,
-                            "content": request,
-                            "head": head,
-                            "header": header,
-                            "body": body,
-                            "method": method,
-                            "protocol": protocol,
-                            "path": request_path,
-                            "parameter": parameter,
-                            "config": self.config
-                        })
+                        response = self.config.routing[key](request)
                         
                         if type(response) == str:
                             conn.sendall(files.encode_response(response))
@@ -106,7 +107,7 @@ class App:
 
 
             try:
-                response = files.handle_request(method, request_path, self.config.root_directory, self.config.error_html)
+                response = files.handle_request(request)
             except:
                 if self.config.debug:
                     traceback.print_exc()
