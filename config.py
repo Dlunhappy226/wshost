@@ -20,5 +20,6 @@ error_html = """<html>
 </body>
 </html>"""
 
-#Debug
+#Message
+startup = True
 debug = True

@@ -9,7 +9,8 @@ import sys
 
 class App:
     def __init__(self, config):
-        print("Starting WSHost")
+        if(config.startup):
+            print("Starting WSHost")
         self.config = config
 
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,7 +21,8 @@ class App:
 
         address = server.getsockname()
 
-        print("WSHost listening {}:{}".format(address[0], address[1],))
+        if(config.startup):
+            print("WSHost listening {}:{}".format(address[0], address[1]))
 
         self.main(server)
 
