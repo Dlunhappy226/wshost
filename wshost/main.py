@@ -98,9 +98,9 @@ class App:
                 
                 elif type(response) == responses.response:
                     if type(response.content) == str:
-                        response = responses.encode_response(response.content, response.status, header=response.headers)
+                        response = responses.encode_response(response.content, response.status, header=response.header)
                     elif type(response.content) == bytes:
-                        response = responses.encode_binary_response(response.content, response.status, header=response.headers)
+                        response = responses.encode_binary_response(response.content, response.status, header=response.header)
                     conn.sendall(response)
                     return True
                 

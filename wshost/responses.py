@@ -4,10 +4,10 @@ import os
 
 
 class response:
-    def __init__(self, status, headers, content):
-        self.status = status
-        self.headers = headers
+    def __init__(self, content, header, status=headers.OK):
         self.content = content
+        self.header = header
+        self.status = status
 
 
 class raw_response:
@@ -21,7 +21,7 @@ class redirect:
         self.status = status
 
     def redirect(self, request):
-        return response("", self.status, header=[("Location", self.url)])
+        return response("", [("Location", self.url)], status=self.status)
 
 
 class route:
