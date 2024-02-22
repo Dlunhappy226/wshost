@@ -132,5 +132,3 @@ class App:
                 pass
 
             return False
-        
-        return

@@ -39,3 +39,9 @@ def multiform_decode(boundary, body):
         form_content.append((header, content_body))
         
     return form_content
+
+def get_cookie(request):
+    if "Cookie" not in request["header"]:
+        return False
+    
+    return header_decode(request["header"]["Cookie"])
