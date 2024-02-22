@@ -20,6 +20,9 @@ class redirect:
         self.url = url
         self.status = status
 
+    def redirect(self, request):
+        return response("", response.status, header=[("Location", self.url)])
+
 
 class route:
     def __init__(self, path):
