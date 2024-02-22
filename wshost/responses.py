@@ -15,6 +15,15 @@ class raw_response:
         self.response = response
 
 
+class route:
+    def __init__(self, path):
+        self.path = path
+    
+    def route(self, request):
+        request["path"] = self.path
+        return handle_request(request)
+
+
 def read(filename):
     file = open(filename, "rb")
     content = file.read()
