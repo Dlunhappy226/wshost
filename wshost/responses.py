@@ -109,7 +109,7 @@ def generate_error_message(error, error_html):
     else:
         connection = "close"
     error_message = error_html.format(error, error).encode()
-    response = headers.encode(headers.METHOD_NOT_ALLOWED, [
+    response = headers.encode(error, [
         ("Content-Length", len(error_message)),
         ("Content-Type", "text/html"),
         ("Connection", connection)
