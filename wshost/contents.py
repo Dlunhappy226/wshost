@@ -45,3 +45,9 @@ def get_cookie(request):
         return False
     
     return header_decode(request["header"]["Cookie"])
+
+def get_data(request, max_size=65536):
+    if request["body"]:
+        return(request["body"])
+    else:
+        return(request["conn"].recv(max_size))
