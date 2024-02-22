@@ -2,4 +2,5 @@ import wshost.main
 import config
 
 
-wshost.main.App(config)
+if __name__ == "__main__":
+    wshost.main.App(config)
