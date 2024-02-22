@@ -1,4 +1,4 @@
-import wshost.headers as headers
+from wshost import headers
 import mimetypes
 import os
 
@@ -13,6 +13,12 @@ class response:
 class raw_response:
     def __init__(self, response):
         self.response = response
+
+
+class redirect:
+    def __init__(self, url, status=headers.TEMPORARY_REDIRECT):
+        self.url = url
+        self.status = status
 
 
 class route:

@@ -5,6 +5,7 @@ import time
 
 SWITCHING_PROTOCOLS = "101 Switching Protocols"
 OK = "200 OK"
+TEMPORARY_REDIRECT = "307 Temporary Redirect"
 BAD_REQUEST = "400 Bad Request"
 NOT_FOUND = "404 Not Found"
 METHOD_NOT_ALLOWED = "405 Method Not Allowed"

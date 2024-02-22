@@ -108,6 +108,10 @@ class App:
                     conn.sendall(response.response)
                     return True
                 
+                elif type(response) == responses.redirect:
+                    conn.sendall(responses.encode_response("", response.status, header=[("Location", response.url)]))
+                    return True
+                
                 else:
                     return False
                 
