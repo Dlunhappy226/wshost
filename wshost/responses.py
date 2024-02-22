@@ -16,7 +16,7 @@ class raw_response:
 
 
 class redirect:
-    def __init__(self, url, status=headers.TEMPORARY_REDIRECT):
+    def __init__(self, url, status=headers.FOUND):
         self.url = url
         self.status = status
 
