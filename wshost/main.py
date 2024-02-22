@@ -70,10 +70,6 @@ class App:
                 "parameter": parameter,
                 "config": self.config
             }
-
-            if protocol.lower() != "http/1.1":
-                conn.sendall(responses.generate_error_message(headers.BAD_REQUEST, self.config.error_html))
-                return False
             
             handler = responses.handle_request
 
