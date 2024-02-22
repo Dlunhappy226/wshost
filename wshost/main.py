@@ -94,18 +94,22 @@ class App:
                 
                 elif type(response) == responses.response:
                     if type(response.content) == str:
-                        response = responses.encode_response(response.content, response.status, header=response.header)
+                        response = responses.encode_response(response.content, response.status, response.header)
                     elif type(response.content) == bytes:
-                        response = responses.encode_binary_response(response.content, response.status, header=response.header)
+                        response = responses.encode_binary_response(response.content, response.status, response.header)
                     conn.sendall(response)
                     return True
                 
                 elif type(response) == responses.raw_response:
                     conn.sendall(response.response)
                     return True
+
+                elif type(response) == responses.route:
+                    conn.sendall(response.route(request))
+                    return True
                 
                 elif type(response) == responses.redirect:
-                    conn.sendall(responses.encode_response("", response.status, header=[("Location", response.url)]))
+                    conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
                     return True
                 
                 else:

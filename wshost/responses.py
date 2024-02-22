@@ -100,10 +100,8 @@ def handle_request(request):
         response = headers.encode(status, header).encode() + content
     else:
         response = generate_error_message(headers.METHOD_NOT_ALLOWED, error_html)
-
-    request["conn"].sendall(response)
     
-    return True
+    return raw_response(response)
 
 def generate_error_message(error, error_html):
     if error != headers.BAD_REQUEST:
