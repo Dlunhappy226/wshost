@@ -96,6 +96,18 @@ class App:
                 elif type(response) == bool:
                     return response
                 
+                elif type(response) == responses.response:
+                    if type(response.content) == str:
+                        response = responses.encode_response(response.content, response.status, header=response.headers)
+                    elif type(response.content) == bytes:
+                        response = responses.encode_binary_response(response.content, response.status, header=response.headers)
+                    conn.sendall(response)
+                    return True
+                
+                elif type(response) == responses.raw_response:
+                    conn.sendall(response.response)
+                    return True
+                
                 else:
                     return False
                 

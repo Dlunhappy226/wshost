@@ -3,6 +3,18 @@ import mimetypes
 import os
 
 
+class response:
+    def __init__(self, status, headers, content):
+        self.status = status
+        self.headers = headers
+        self.content = content
+
+
+class raw_response:
+    def __init__(self, response):
+        self.response = response
+
+
 def read(filename):
     file = open(filename, "rb")
     content = file.read()
@@ -89,13 +101,15 @@ def generate_error_message(error, error_html):
 
     return response
 
-def encode_response(content, status=headers.OK):
-    return headers.encode(status, [
-        ("Content-Length", len(content))
+def encode_response(content, status=headers.OK, header=[]):
+    return headers.encode(status, header + [
+        ("Content-Length", len(content)),
+        ("Connection", "keep-alive")
     ]).encode() + content.encode()
 
-def encode_binary_response(content, status=headers.OK):
-    return headers.encode(status, [
+def encode_binary_response(content, status=headers.OK, header=[]):
+    return headers.encode(status, header + [
         ("Content-Length", len(content)),
         ("Accept-Ranges", "bytes"),
+        ("Connection", "keep-alive")
     ]).encode() + content

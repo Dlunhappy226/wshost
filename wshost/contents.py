@@ -7,8 +7,8 @@ def decode(content, separator):
 
     return decoded
 
-def header_decode(content):
-    splited = content.split(";")
+def header_decode(header):
+    splited = header.split(";")
     decoded = {}
     for x in splited:
         key, sep, value = x.partition("=")
