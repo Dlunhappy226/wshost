@@ -71,7 +71,9 @@ def handle_request(request):
     else:
         response = generate_error_message(headers.METHOD_NOT_ALLOWED, error_html)
 
-    return response
+    request["conn"].sendall(response)
+    
+    return True
 
 def generate_error_message(error, error_html):
     if error != headers.BAD_REQUEST:
