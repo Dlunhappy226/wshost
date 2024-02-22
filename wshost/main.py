@@ -1,5 +1,5 @@
+from wshost import responses
 from wshost import headers
-from wshost import files
 import traceback
 import threading
 import fnmatch
@@ -51,7 +51,7 @@ class App:
                 return
             
             if len(raw_request) > 65536:
-                conn.sendall(files.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
+                conn.sendall(responses.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
                 return
 
             head, header, body = headers.decode(raw_request)
@@ -72,10 +72,10 @@ class App:
             }
 
             if protocol.lower() != "http/1.1":
-                conn.sendall(files.generate_error_message(headers.BAD_REQUEST, self.config.error_html))
+                conn.sendall(responses.generate_error_message(headers.BAD_REQUEST, self.config.error_html))
                 return False
             
-            handler = files.handle_request
+            handler = responses.handle_request
 
             for key in self.config.routing:
                 if fnmatch.fnmatch(request_path, key):
@@ -86,11 +86,11 @@ class App:
                 response = handler(request)
                 
                 if type(response) == str:
-                    conn.sendall(files.encode_response(response))
+                    conn.sendall(responses.encode_response(response))
                     return True
                 
                 elif type(response) == bytes:
-                    conn.sendall(files.encode_binary_response(response))
+                    conn.sendall(responses.encode_binary_response(response))
                     return True
                 
                 elif type(response) == bool:
@@ -102,7 +102,7 @@ class App:
             except:
                 if self.config.debug:
                     traceback.print_exc()
-                response = files.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
+                response = responses.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
                 try:
                     conn.sendall(response)
                 except:
@@ -111,7 +111,7 @@ class App:
             return
 
         except:
-            response = files.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
+            response = responses.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
 
             try:
                 conn.sendall(response)
