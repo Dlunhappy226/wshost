@@ -2,13 +2,16 @@
 host = "0.0.0.0"
 port = 8000
 
+
 #File config
 root_directory = "html"
+
 
 #Routing
 
 routing = {
 }
+
 
 #Error page
 
@@ -19,6 +22,7 @@ error_html = """<html>
 <hr><center>WSHost/1.0</center>
 </body>
 </html>"""
+
 
 #Message
 startup = True
