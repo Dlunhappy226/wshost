@@ -75,9 +75,9 @@ class App:
             
             handler = responses.handle_request
 
-            for key in self.config.routing:
+            for key in self.config.route:
                 if fnmatch.fnmatch(request_path, key):
-                    handler = self.config.routing[key]         
+                    handler = self.config.route[key]         
                     break
 
             try:

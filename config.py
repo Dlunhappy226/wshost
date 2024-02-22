@@ -9,7 +9,7 @@ root_directory = "html"
 
 #Routing
 
-routing = {
+route = {
 }
 
 
