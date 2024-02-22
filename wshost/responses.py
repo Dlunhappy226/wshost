@@ -21,7 +21,7 @@ class redirect:
         self.status = status
 
     def redirect(self, request):
-        return response("", response.status, header=[("Location", self.url)])
+        return response("", self.status, header=[("Location", self.url)])
 
 
 class route:
