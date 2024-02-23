@@ -37,10 +37,9 @@ class App:
 
 
     def client_handler(self, conn, addr):
-        while True:
-            if self.request_handle(conn, addr) == False:
-                conn.close()
-                return
+        while self.request_handle(conn, addr):
+            conn.close()
+            return
 
     def request_handle(self, conn, addr):
         try:
@@ -50,11 +49,11 @@ class App:
                 return False
 
             if raw_request == b"\r\n":
-                return
+                return True
             
             if len(raw_request) > 65536:
                 conn.sendall(responses.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
-                return
+                return False
 
             head, header, body = headers.decode(raw_request)
             method, path, protocol = headers.head_decode(head)
@@ -131,7 +130,7 @@ class App:
                 except:
                     pass
                 
-            return
+            return True
 
         except:
             response = responses.generate_error_message(headers.BAD_REQUEST, self.config.error_html)

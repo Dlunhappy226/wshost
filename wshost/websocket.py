@@ -130,7 +130,7 @@ class Websocket:
                     self.conn.close()
                     clients.remove(self)
                     self.onclose(self)
-                    return
+                    return False
 
                 content, op_code = self.decode(message)
 
@@ -141,7 +141,7 @@ class Websocket:
                     self.conn.close()
                     clients.remove(self)
                     self.onclose(self)
-                    return
+                    return False
                 
                 elif op_code == opcode_ping:
                     self.send(content, opcode_pong)
@@ -152,4 +152,4 @@ class Websocket:
                 self.conn.close()
                 clients.remove(self)
                 self.onclose(self)
-                return
+                return False
