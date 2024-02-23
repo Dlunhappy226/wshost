@@ -12,9 +12,12 @@ def header_decode(header):
     decoded = {}
     for x in splited:
         key, sep, value = x.partition("=")
-        decoded[key.strip()] = value.strip(' " ')
+        decoded[key.strip()] = value.strip()
 
     return decoded
+
+def form_decode(content):
+    return decode(content.decode(), "&")
 
 def content_decode(content):
     header, sep, body = content.partition(b"\r\n\r\n")
@@ -26,10 +29,8 @@ def content_decode(content):
 
     return header_dist, body
 
-def form_decode(content):
-    return decode(content, "&")
-
-def multiform_decode(boundary, body):
+def multipart_decode(request, body):
+    boundary = header_decode(request["header"]["Content-Type"])["boundary"]
     body, sep, end = body.partition(("\r\n--" + boundary + "--").encode())
     content = body.split(("--" + boundary + "\r\n").encode())
     content.pop(0)
