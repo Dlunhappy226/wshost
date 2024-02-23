@@ -8,11 +8,17 @@ class response:
         self.content = content
         self.header = header
         self.status = status
+        
+    def response(self, request):
+        return self
 
 
 class raw_response:
     def __init__(self, response):
         self.response = response
+
+    def response(self, request):
+        return self
 
 
 class redirect:
