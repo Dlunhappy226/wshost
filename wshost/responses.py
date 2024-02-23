@@ -40,7 +40,7 @@ class route:
 
 class error:
     def __init__(self, error):
-        self.error
+        self.error = error
 
     def route(self, request):
         return self
