@@ -114,6 +114,10 @@ class App:
                     conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
                     return True
                 
+                elif type(response) == responses.error:
+                    conn.sendall(responses.generate_error_message(response.error, self.config.error_html))
+                    return True
+                
                 else:
                     return False
                 

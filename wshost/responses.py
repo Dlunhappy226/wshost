@@ -9,7 +9,7 @@ class response:
         self.header = header
         self.status = status
         
-    def response(self, request):
+    def route(self, request):
         return self
 
 
@@ -17,7 +17,7 @@ class raw_response:
     def __init__(self, response):
         self.response = response
 
-    def response(self, request):
+    def route(self, request):
         return self
 
 
@@ -26,8 +26,8 @@ class redirect:
         self.url = url
         self.status = status
 
-    def redirect(self, request):
-        return response("", [("Location", self.url)], status=self.status)
+    def route(self, request):
+        return self
 
 
 class route:
@@ -35,8 +35,15 @@ class route:
         self.path = path
     
     def route(self, request):
-        request["path"] = self.path
-        return handle_request(request)
+        return self
+
+
+class error:
+    def __init__(self, error):
+        self.error
+
+    def route(self, request):
+        return self
 
 
 def read(filename):
