@@ -107,7 +107,8 @@ class App:
                     return True
 
                 elif type(response) == responses.route:
-                    conn.sendall(response.route(request).response)
+                    request["path"] = response.path
+                    conn.sendall(responses.handle_request(request).response)
                     return True
                 
                 elif type(response) == responses.redirect:
