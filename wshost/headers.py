@@ -23,12 +23,22 @@ REQUEST_HEADER_FIELDS_TOO_LARGE = "431 Request Header Fields Too Large"
 INTERNAL_SERVER_ERROR = "500 Internal Server Error"
 SERVICE_UNAVAILABLE = "503 Service Unavailable"
 
+def check_header(header, key):
+    for header_key in header:
+        if header_key[0] == key:
+            return True
+        
+    return False
 
 def encode(status=OK, content=[]):
-    utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
     header_content = {}
-    header_content["Server"] = "WSHost/1.0"
-    header_content["Date"] = utctime
+    if not check_header(content, "Server"):
+        header_content["Server"] = "WSHost/1.0"
+
+    if not check_header(content, "Date"):
+        utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+        header_content["Date"] = utctime
+        
     header = "HTTP/1.1 {}\r\n".format(status) 
 
     for key in header_content:
