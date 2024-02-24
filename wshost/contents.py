@@ -1,3 +1,6 @@
+from urllib.parse import unquote as parse_url
+
+
 def decode(content, separator):
     splited = content.split(separator)
     decoded = {}
