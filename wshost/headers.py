@@ -33,7 +33,7 @@ def check_header(header, key):
 def encode(status=OK, content=[]):
     header_content = {}
     if not check_header(content, "Server"):
-        header_content["Server"] = "WSHost/1.0"
+        header_content["Server"] = "wshost"
 
     if not check_header(content, "Date"):
         utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
