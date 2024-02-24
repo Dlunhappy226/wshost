@@ -4,7 +4,7 @@ import os
 
 
 class response:
-    def __init__(self, content, header, status=headers.OK):
+    def __init__(self, content, header=[], status=headers.OK):
         self.content = content
         self.header = header
         self.status = status
