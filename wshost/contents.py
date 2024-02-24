@@ -1,3 +1,4 @@
+from urllib.parse import unquote_plus as parse_form
 from urllib.parse import unquote as parse_url
 
 
@@ -6,7 +7,7 @@ def decode(content, separator):
     decoded = {}
     for x in splited:
         key, sep, value = x.partition("=")
-        decoded[key.strip()] = value.strip()
+        decoded[parse_form(key.strip())] = parse_form(value.strip())
 
     return decoded
 
