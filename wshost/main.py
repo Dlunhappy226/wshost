@@ -24,16 +24,24 @@ class App:
         if(config.startup):
             print("WSHost listening {}:{}".format(address[0], address[1]))
 
-        self.main(server)
+        threading.Thread(target=self.main, args=(server,)).start()
+        try:
+            while True:
+                pass
 
-        server.close()
-        sys.exit()
+        except KeyboardInterrupt:
+            print("Exiting")
+            server.close()
+            sys.exit()
+
 
     def main(self, server):
         while True:
-            conn, addr = server.accept()
-            client_thread = threading.Thread(target=self.client_handler, args=(conn, addr))
-            client_thread.start()
+            try:
+                conn, addr = server.accept()
+                threading.Thread(target=self.client_handler, args=(conn, addr), daemon=True).start()
+            except:
+                return
 
 
     def client_handler(self, conn, addr):
