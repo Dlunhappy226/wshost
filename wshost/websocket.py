@@ -33,7 +33,7 @@ def sendall(content, except_for="", op_code=opcode_text):
 
 
 class Websocket:
-    def __init__(self, request, max_size=65536, debug=False):
+    def __init__(self, request, max_size=1024*1024, debug=False):
         def onmessage(self, message):
             pass
 
