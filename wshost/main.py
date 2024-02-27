@@ -51,7 +51,7 @@ class App:
 
     def request_handle(self, conn, addr):
         try:
-            raw_request = conn.recv(65537)
+            raw_request = conn.recv(8193)
 
             if raw_request == b"":
                 return False
@@ -59,7 +59,7 @@ class App:
             if raw_request == b"\r\n":
                 return True
             
-            if len(raw_request) > 65536:
+            if len(raw_request) > 8192:
                 conn.sendall(responses.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
                 return False
 
