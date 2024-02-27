@@ -24,7 +24,7 @@ class App:
         if(config.startup):
             print("WSHost listening {}:{}".format(address[0], address[1]))
 
-        threading.Thread(target=self.main, args=(server,)).start()
+        threading.Thread(target=self.main, args=(server,), daemon=True).start()
         try:
             while True:
                 pass
