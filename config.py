@@ -5,16 +5,15 @@ port = 8000
 
 #File config
 root_directory = "html"
+max_upload_size = 1024 * 1024
 
 
 #Routing
-
 route = {
 }
 
 
 #Error page
-
 error_html = """<html>
 <head><title>{}</title></head>
 <body>

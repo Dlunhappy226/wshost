@@ -18,6 +18,7 @@ FORBIDDEN = "403 Forbidden"
 NOT_FOUND = "404 Not Found"
 METHOD_NOT_ALLOWED = "405 Method Not Allowed"
 GONE = "410 Gone"
+PAYLOAD_TOO_LARGE = "413 Payload Too Large"
 REQUEST_HEADER_FIELDS_TOO_LARGE = "431 Request Header Fields Too Large"
 
 INTERNAL_SERVER_ERROR = "500 Internal Server Error"

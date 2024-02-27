@@ -117,10 +117,10 @@ def handle_request(request):
     return raw_response(response)
 
 def generate_error_message(error, error_html):
-    if error != headers.BAD_REQUEST:
-        connection = "keep-alive"
-    else:
+    if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
         connection = "close"
+    else:
+        connection = "keep-alive"
     error_message = error_html.format(error, error).encode()
     response = headers.encode(error, [
         ("Content-Length", len(error_message)),

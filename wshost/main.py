@@ -66,6 +66,15 @@ class App:
             head, header, body = headers.decode(raw_request)
             method, path, protocol = headers.head_decode(head)
             request_path, parameter = headers.path_decode(path)
+
+            if "Content-Length" in header and not body:
+                upload_size = int(header["Content-Length"])
+                if upload_size > self.config.max_upload_size:
+                    conn.sendall(responses.generate_error_message(headers.PAYLOAD_TOO_LARGE, self.config.error_html))
+                    return False
+                else:
+                    body = conn.recv(upload_size)
+
             request = {
                 "conn": conn,
                 "addr": addr,
