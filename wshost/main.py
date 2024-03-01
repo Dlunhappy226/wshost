@@ -4,6 +4,7 @@ import traceback
 import threading
 import fnmatch
 import socket
+import time
 import sys
 
 
@@ -17,7 +18,7 @@ class App:
 
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((config.host, config.port))
-        server.listen()
+        server.listen(512)
 
         address = server.getsockname()
 
@@ -27,7 +28,7 @@ class App:
         threading.Thread(target=self.main, args=(server,), daemon=True).start()
         try:
             while True:
-                pass
+                time.sleep(1)
 
         except KeyboardInterrupt:
             print("Exiting")
