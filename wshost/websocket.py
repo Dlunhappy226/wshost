@@ -116,7 +116,7 @@ class Websocket:
         self.conn.sendall(self.encode(content, op_code))
 
     def close(self):
-        self.sendall("", opcode_close)
+        self.send("", opcode_close)
         self.conn.close()
         clients.remove(self)
         self.onclose(self)
