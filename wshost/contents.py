@@ -47,6 +47,6 @@ def multipart_decode(request, body):
 
 def get_cookie(request):
     if "Cookie" not in request["header"]:
-        return False
+        return []
     
     return header_decode(request["header"]["Cookie"])

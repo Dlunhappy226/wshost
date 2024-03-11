@@ -1,4 +1,5 @@
 from wshost import responses
+from wshost import contents
 from wshost import headers
 import traceback
 import threading
@@ -76,9 +77,12 @@ class App:
                 else:
                     body = conn.recv(upload_size)
 
+            cookie = contents.get_cookie({"header": header})
+
             request = {
                 "conn": conn,
                 "addr": addr,
+                "ip": addr[0],
                 "content": raw_request,
                 "head": head,
                 "header": header,
@@ -87,6 +91,7 @@ class App:
                 "protocol": protocol,
                 "path": request_path,
                 "parameter": parameter,
+                "cookie": cookie,
                 "config": self.config
             }
             
