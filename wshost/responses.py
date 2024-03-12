@@ -131,14 +131,26 @@ def generate_error_message(error, error_html):
     return response
 
 def encode_response(content, status=headers.OK, header=[]):
-    return headers.encode(status, header + [
-        ("Content-Length", len(content)),
-        ("Connection", "keep-alive")
-    ]).encode() + content.encode()
+    default_header = []
+
+    if not headers.check_header(header, "Content-Length"):
+        default_header.append(("Content-Length", len(content)))
+    
+    if not headers.check_header(header, "Connection"):
+        default_header.append(("Connection", "keep-alive"))
+
+    return headers.encode(status, header + default_header).encode() + content.encode()
 
 def encode_binary_response(content, status=headers.OK, header=[]):
-    return headers.encode(status, header + [
-        ("Content-Length", len(content)),
-        ("Accept-Ranges", "bytes"),
-        ("Connection", "keep-alive")
-    ]).encode() + content
+    default_header = []
+
+    if not headers.check_header(header, "Content-Length"):
+        default_header.append(("Content-Length", len(content)))
+
+    if not headers.check_header(header, "Accept-Ranges"):
+        default_header.append(("Accept-Ranges", "bytes"))
+    
+    if not headers.check_header(header, "Connection"):
+        default_header.append(("Connection", "keep-alive"))
+
+    return headers.encode(status, header + default_header).encode() + content
