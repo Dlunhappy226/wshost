@@ -60,7 +60,7 @@ def handle_request(request):
     file = path.split("/")
     filename = file[-1]
     
-    if method == "get" or method == "post" or method == "head":
+    if method == "get" or method == "head":
         try:
             if filename == "":
                 content = read(root + path + "index.html")
