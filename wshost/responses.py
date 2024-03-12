@@ -6,7 +6,7 @@ import time
 import os
 
 
-class response:
+class Response:
     def __init__(self, content, header=[], status=headers.OK):
         self.content = content
         self.header = header
@@ -16,7 +16,7 @@ class response:
         return self
 
 
-class raw_response:
+class RawResponse:
     def __init__(self, response):
         self.response = response
 
@@ -24,7 +24,7 @@ class raw_response:
         return self
 
 
-class redirect:
+class Redirect:
     def __init__(self, url, status=headers.FOUND):
         self.url = url
         self.status = status
@@ -33,7 +33,7 @@ class redirect:
         return self
 
 
-class route:
+class Route:
     def __init__(self, path):
         self.path = path
     
@@ -41,7 +41,7 @@ class route:
         return self
 
 
-class error:
+class Error:
     def __init__(self, error):
         self.error = error
 
@@ -70,10 +70,10 @@ def handle_request(request):
 
             elif os.path.isdir(f"{root}{path}"):
                 content = b""
-                return redirect(f"{path}/")
+                return Redirect(f"{path}/")
 
             if not os.path.exists(f"{root}{path}"):
-                return error(error=headers.NOT_FOUND)
+                return Error(error=headers.NOT_FOUND)
 
             content = read(f"{root}{path}")
             status = headers.OK
@@ -90,7 +90,7 @@ def handle_request(request):
                     content = b""
 
         except PermissionError:
-            return error(error=headers.NOT_FOUND)
+            return Error(error=headers.NOT_FOUND)
 
         header = []
 
@@ -113,9 +113,9 @@ def handle_request(request):
         header.append(("Connection", "keep-alive"))
         header.append(("ETag", etag))
         
-        return raw_response(headers.encode(status=status, headers=header).encode() + content)
+        return RawResponse(headers.encode(status=status, headers=header).encode() + content)
     else:
-        return error(status=headers.METHOD_NOT_ALLOWED)
+        return Error(status=headers.METHOD_NOT_ALLOWED)
 
 def generate_error_message(error, error_html):
     if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:

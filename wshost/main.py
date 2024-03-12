@@ -127,7 +127,7 @@ class App:
                 elif type(response) == bool:
                     return response
                 
-                elif type(response) == responses.response:
+                elif type(response) == responses.Response:
                     if type(response.content) == str:
                         response = responses.encode_response(response.content, response.status, response.header)
 
@@ -137,20 +137,20 @@ class App:
                     conn.sendall(response)
                     return True
                 
-                elif type(response) == responses.raw_response:
+                elif type(response) == responses.RawResponse:
                     conn.sendall(response.response)
                     return True
 
-                elif type(response) == responses.route:
+                elif type(response) == responses.Route:
                     request["path"] = response.path
                     conn.sendall(responses.handle_request(request).response)
                     return True
                 
-                elif type(response) == responses.redirect:
+                elif type(response) == responses.Redirect:
                     conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
                     return True
                 
-                elif type(response) == responses.error:
+                elif type(response) == responses.Error:
                     conn.sendall(responses.generate_error_message(response.error, self.config.error_html))
                     return True
                 
