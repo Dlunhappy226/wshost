@@ -115,7 +115,7 @@ def handle_request(request):
         
         return RawResponse(headers.encode(status=status, headers=header).encode() + content)
     else:
-        return Error(status=headers.METHOD_NOT_ALLOWED)
+        return Error(error=headers.METHOD_NOT_ALLOWED)
 
 def generate_error_message(error, error_html):
     if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
