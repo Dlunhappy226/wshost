@@ -11,8 +11,8 @@ def header_decode(header):
 
     return fields
 
-def form_decode(body):
-    fields = body.decode().split("&")
+def form_decode(request):
+    fields = request["body"].decode().split("&")
     form = {}
     for x in fields:
         field, sep, value = x.partition("=")
@@ -30,9 +30,9 @@ def content_decode(content):
 
     return headers, body
 
-def multipart_decode(request, body):
+def multipart_decode(request):
     boundary = header_decode(request["header"]["Content-Type"])["boundary"]
-    body, sep, end = body.partition(f"\r\n--{boundary}--".encode())
+    body, sep, end = request["body"].partition(f"\r\n--{boundary}--".encode())
     fields = body.split(f"--{boundary}\r\n".encode())
     fields.pop(0)
     form_content = []

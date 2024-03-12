@@ -78,8 +78,6 @@ class App:
                 else:
                     body = conn.recv(upload_size)
 
-            cookie = contents.get_cookie({"header": header})
-
             request = {
                 "conn": conn,
                 "addr": addr,
@@ -95,6 +93,15 @@ class App:
                 "cookie": cookie,
                 "config": self.config
             }
+
+            cookie = contents.get_cookie(request)
+
+            if "Content-Type" in header:
+                if header["Content-Type"] == "application/x-www-form-urlencoded":
+                    request["form"] == contents.form_decode(request)
+                    
+                if list(contents.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
+                    request["form"] == contents.multipart_decode(request)
             
             handler = responses.handle_request
 

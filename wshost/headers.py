@@ -1,4 +1,3 @@
-from wshost import contents
 import urllib.parse
 import time
 
