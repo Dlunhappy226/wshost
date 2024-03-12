@@ -43,7 +43,7 @@ class Websocket:
         global id
         self.conn = request["conn"]
         self.id = id
-        id = id + 1
+        id += 1
         self.max_size = max_size
         self.debug = debug
         header = request["header"]

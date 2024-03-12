@@ -42,12 +42,12 @@ def encode(status=OK, headers=[]):
     header = "HTTP/1.1 {}\r\n".format(status) 
 
     for field in default_headers:
-        header = header + f"{field}: {default_headers[field]}\r\n"
+        header += f"{field}: {default_headers[field]}\r\n"
 
     for field in headers:
-        header = header + f"{field[0]}: {field[1]}\r\n"
+        header += f"{field[0]}: {field[1]}\r\n"
 
-    header = header + "\r\n"
+    header += "\r\n"
     return header
 
 def decode(request):
