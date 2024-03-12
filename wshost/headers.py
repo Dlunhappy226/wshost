@@ -24,51 +24,56 @@ REQUEST_HEADER_FIELDS_TOO_LARGE = "431 Request Header Fields Too Large"
 INTERNAL_SERVER_ERROR = "500 Internal Server Error"
 SERVICE_UNAVAILABLE = "503 Service Unavailable"
 
-def check_header(header, key):
-    for header_key in header:
-        if header_key[0] == key:
+def check_header(headers, field):
+    for header in headers:
+        if header[0] == field:
             return True
         
     return False
 
-def encode(status=OK, content=[]):
-    header_content = {}
-    if not check_header(content, "Server"):
-        header_content["Server"] = "wshost"
+def encode(status=OK, headers=[]):
+    default_headers = {}
+    if not check_header(headers, "Server"):
+        default_headers["Server"] = "wshost"
 
-    if not check_header(content, "Date"):
+    if not check_header(headers, "Date"):
         utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
-        header_content["Date"] = utctime
+        default_headers["Date"] = utctime
         
     header = "HTTP/1.1 {}\r\n".format(status) 
 
-    for key in header_content:
-        header = header + "{}: {}\r\n".format(key, header_content[key])
+    for field in default_headers:
+        header = header + f"{field}: {default_headers[field]}\r\n"
 
-    for key in content:
-        header = header + "{}: {}\r\n".format(key[0], key[1])
+    for field in headers:
+        header = header + f"{field[0]}: {field[1]}\r\n"
 
     header = header + "\r\n"
     return header
 
 def decode(request):
     header, sep, body = request.partition(b"\r\n\r\n")
-    content = header.decode().split("\r\n")
-    head = content.pop(0)
-    header_dist = {}
-    for key in content:
-        header_key, sep, header_con = key.partition(":")
-        header_dist[header_key.strip()] = header_con.strip()
+    fields = header.decode().split("\r\n")
+    head = fields.pop(0)
+    headers = {}
+    for x in fields:
+        field, sep, value = x.partition(":")
+        headers[field] = value.lstrip()
 
-    return head, header_dist, body
+    return head, headers, body
 
 def head_decode(head):
     method, path, protocol = head.split(" ")
     return method, path, protocol
 
 def path_decode(path):
-    path, sep, parameter = path.partition("?")
-    parameters = contents.decode(parameter, "&")
+    path, sep, raw_parameter = path.partition("?")
+
+    fields = raw_parameter.split("&")
+    parameters = {}
+    for x in fields:
+        field, sep, value = x.partition("=")
+        parameters[urllib.parse.unquote(field)] = urllib.parse.unquote(value)
 
     return urllib.parse.unquote(path), parameters
     
