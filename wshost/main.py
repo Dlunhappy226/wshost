@@ -5,6 +5,7 @@ import traceback
 import threading
 import fnmatch
 import socket
+import json
 import time
 import sys
 
@@ -113,14 +114,20 @@ class App:
                     conn.sendall(responses.encode_binary_response(response))
                     return True
                 
+                elif type(response) == list or type(response) == dict:
+                    conn.sendall(responses.encode_response(json.dumps(response)))
+                    return True
+                
                 elif type(response) == bool:
                     return response
                 
                 elif type(response) == responses.response:
                     if type(response.content) == str:
                         response = responses.encode_response(response.content, response.status, response.header)
+
                     elif type(response.content) == bytes:
                         response = responses.encode_binary_response(response.content, response.status, response.header)
+
                     conn.sendall(response)
                     return True
                 
