@@ -1,5 +1,8 @@
 from wshost import headers
 import mimetypes
+import datetime
+import hashlib
+import time
 import os
 
 
@@ -56,71 +59,70 @@ def handle_request(request):
     method = request["method"].lower()
     path = request["path"]
     root = request["config"].root_directory
-    error_html = request["config"].error_html
     file = path.split("/")
     filename = file[-1]
     
     if method == "get" or method == "head":
         try:
             if filename == "":
-                content = read(root + path + "index.html")
-                status = headers.OK
-                content_type = "text/html"
+                path = f"{path}/index.html"
+                filename = "index.html"
 
-            elif os.path.exists(root + path + "/"):
+            elif os.path.isdir(f"{root}{path}"):
                 content = b""
-                status = "307 Temporary Redirect"
-                response = headers.encode(status, [("Location", path + "/")]).encode()
-                content_type = ""
+                return redirect(f"{path}/")
 
+            if not os.path.exists(f"{root}{path}"):
+                return error(error=headers.NOT_FOUND)
+
+            content = read(f"{root}{path}")
+            status = headers.OK
+            content_type = mimetypes.guess_type(filename)[0]
+            if content_type == None:
+                content_type = "text/plain"
+
+            last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", datetime.datetime.utcfromtimestamp(os.path.getmtime(f"{root}{path}")).timetuple())
+            etag = f'"{hashlib.md5(content).hexdigest()}"'
+
+            if "If-None-Match" in request["header"]:
+                if request["header"]["If-None-Match"] == etag:
+                    status = headers.NOT_MODIFIED
+                    content = b""
+
+        except PermissionError:
+            return error(error=headers.NOT_FOUND)
+
+        header = []
+
+        if status != headers.NOT_MODIFIED:
+            header.append(("Content-Type", content_type))
+
+            if method == "get":
+                header.append(("Content-Length", len(content)))
             else:
-                content = read(root + path)
-                status = headers.OK
-                content_type = mimetypes.guess_type(filename)[0]
-                if content_type == None:
-                    content_type = "text/plain"
+                content = b""
 
-        except:
-            content = error_html.format(headers.NOT_FOUND, headers.NOT_FOUND).encode()
-            status = headers.NOT_FOUND
-            content_type = "text/html"
-        
-        content_length = str(len(content))
+        header.append(("Last-Modified", last_modified))
 
-        if method == "head":
-            content = b""
-
-        if content_type != "":
+        if status != headers.NOT_MODIFIED:
             try:
                 content.decode()
-                header = [
-                    ("Content-Type", content_type),
-                    ("Content-Length", content_length),
-                    ("Connection", "keep-alive")
-                ]
             except UnicodeDecodeError:
-                header = [
-                    ("Content-Type", content_type),
-                    ("Content-Length", content_length),
-                    ("Accept-Ranges", "bytes"),
-                    ("Connection", "keep-alive")
-                ]
-        else:
-            header = [
-                ("Connection", "keep-alive")
-            ]
+                header.append(("Accept-Ranges", "bytes"))
+
+        header.append(("Connection", "keep-alive"))
+        header.append(("ETag", etag))
         
-        response = headers.encode(status, header).encode() + content
+        return raw_response(headers.encode(status=status, headers=header).encode() + content)
     else:
-        response = generate_error_message(headers.METHOD_NOT_ALLOWED, error_html)
-    
-    return raw_response(response)
+        return error(status=headers.METHOD_NOT_ALLOWED)
 
 def generate_error_message(error, error_html):
     if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
         connection = "close"
     else:
         connection = "keep-alive"
+
     error_message = error_html.format(error, error).encode()
     response = headers.encode(error, [
         ("Content-Length", len(error_message)),
