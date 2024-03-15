@@ -87,7 +87,7 @@ class App:
                         read_data = b""
                         for x in range(buffer):
                             if body != b"":
-                                read_data += body[0]
+                                read_data += body[:1]
                                 body = body[1:]
 
                             else:
