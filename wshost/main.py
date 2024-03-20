@@ -2,6 +2,7 @@ from wshost import responses
 from wshost import cookies
 from wshost import payload
 from wshost import headers
+from wshost import errors
 import traceback
 import threading
 import fnmatch
@@ -84,18 +85,15 @@ class App:
                     return response.connection
                 
                 elif type(response) == responses.Error:
-                    return response_handle(responses.generate_error_message(response.error, request))
+                    return generate_error_message(response.error, request)
                 
                 else:
                     return False
-            
-            def generate_error_message(error, request):
-                return response_handle(responses.generate_error_message(error, request))
-
                 
-            request = {
-                "config": self.config
-            }
+            def generate_error_message(error, request):
+                return response_handle(errors.generate_error_message(error, request))
+                
+            request = {"config": self.config}
 
             raw_request = conn.recv(8193)
 
