@@ -5,7 +5,6 @@ import traceback
 import threading
 import fnmatch
 import socket
-import json
 import time
 import sys
 
@@ -49,11 +48,54 @@ class App:
 
     def client_handler(self, conn, addr):
         while self.request_handle(conn, addr):
-            conn.close()
-            return
+            pass
+
+        conn.close()
 
     def request_handle(self, conn, addr):
         try:
+            def response_handle(response):
+                if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
+                    conn.sendall(responses.encode_response(response))
+                    return True
+                
+                elif type(response) == bool:
+                    return response
+                
+                elif type(response) == responses.Response:
+                    if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
+                        conn.sendall(responses.encode_response(response.content, response.status, response.header))
+                        return response.connection
+                    
+                    return False
+                
+                elif type(response) == responses.RawResponse:
+                    conn.sendall(response.response)
+                    return response.connection
+
+                elif type(response) == responses.Route:
+                    request["path"] = response.path
+                    conn.sendall(responses.request_handle(request).response)
+                    return response.connection
+                
+                elif type(response) == responses.Redirect:
+                    conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
+                    return response.connection
+                
+                elif type(response) == responses.Error:
+                    return response_handle(responses.generate_error_message(response.error, request))
+                
+                else:
+                    return False
+            
+            def generate_error_message(error, request):
+                return response_handle(responses.generate_error_message(error, request))
+
+                
+            request = {
+                "config": self.config
+            }
+
             raw_request = conn.recv(8193)
 
             if raw_request == b"":
@@ -69,8 +111,8 @@ class App:
             if "Content-Length" in header:
                 upload_size = int(header["Content-Length"])
                 if upload_size > self.config.max_upload_size:
-                    conn.sendall(responses.generate_error_message(headers.PAYLOAD_TOO_LARGE, self.config.error_html))
-                    return False
+                    return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
+
                 else:
                     while len(body) != upload_size:
                         if (len(body) + 8192) > upload_size:
@@ -115,14 +157,12 @@ class App:
                         char, body = read(2, body)
 
                     if len(body) > self.config.max_upload_size:
-                        conn.sendall(responses.generate_error_message(headers.PAYLOAD_TOO_LARGE, self.config.error_html))
-                        return False
+                        return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
                     
                     body = data
 
             elif len(raw_request) > 8192:
-                conn.sendall(responses.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, self.config.error_html))
-                return False
+                return generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
 
             request = {
                 "conn": conn,
@@ -148,7 +188,7 @@ class App:
                 if list(contents.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
                     request["form"] = contents.multipart_decode(request)
             
-            handler = responses.handle_request
+            handler = responses.request_handle
 
             for key in self.config.route:
                 if fnmatch.fnmatch(request_path, key):
@@ -157,70 +197,17 @@ class App:
 
             try:
                 response = handler(request)
-                
-                if type(response) == str:
-                    conn.sendall(responses.encode_response(response))
-                    return True
-                
-                elif type(response) == bytes:
-                    conn.sendall(responses.encode_binary_response(response))
-                    return True
-                
-                elif type(response) == list or type(response) == dict:
-                    conn.sendall(responses.encode_response(json.dumps(response)))
-                    return True
-                
-                elif type(response) == bool:
-                    return response
-                
-                elif type(response) == responses.Response:
-                    if type(response.content) == str:
-                        response = responses.encode_response(response.content, response.status, response.header)
-
-                    elif type(response.content) == bytes:
-                        response = responses.encode_binary_response(response.content, response.status, response.header)
-
-                    conn.sendall(response)
-                    return True
-                
-                elif type(response) == responses.RawResponse:
-                    conn.sendall(response.response)
-                    return True
-
-                elif type(response) == responses.Route:
-                    request["path"] = response.path
-                    conn.sendall(responses.handle_request(request).response)
-                    return True
-                
-                elif type(response) == responses.Redirect:
-                    conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
-                    return True
-                
-                elif type(response) == responses.Error:
-                    conn.sendall(responses.generate_error_message(response.error, self.config.error_html))
-                    return True
-                
-                else:
-                    return False
+                return response_handle(response)
                 
             except:
                 if self.config.debug:
                     traceback.print_exc()
-                response = responses.generate_error_message(headers.INTERNAL_SERVER_ERROR, self.config.error_html)
-                try:
-                    conn.sendall(response)
-                except:
-                    pass
-                
-            return True
+
+                return generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
 
         except:
-            traceback.print_exc()
-            response = responses.generate_error_message(headers.BAD_REQUEST, self.config.error_html)
-
             try:
-                conn.sendall(response)
-
+                return generate_error_message(headers.BAD_REQUEST, request)
             except:
                 pass
 

@@ -1,41 +1,47 @@
 from wshost import headers
 import mimetypes
+import traceback
 import datetime
 import hashlib
+import json
 import time
 import os
 
 
 class Response:
-    def __init__(self, content, header=[], status=headers.OK):
+    def __init__(self, content, header=[], status=headers.OK, connection=True):
         self.content = content
         self.header = header
         self.status = status
+        self.connection = connection
         
     def route(self, request):
         return self
 
 
 class RawResponse:
-    def __init__(self, response):
+    def __init__(self, response, connection=True):
         self.response = response
+        self.connection = connection
 
     def route(self, request):
         return self
 
 
 class Redirect:
-    def __init__(self, url, status=headers.FOUND):
+    def __init__(self, url, status=headers.FOUND, connection=True):
         self.url = url
         self.status = status
+        self.connection = connection
 
     def route(self, request):
         return self
 
 
 class Route:
-    def __init__(self, path):
+    def __init__(self, path, connection=True):
         self.path = path
+        self.connection = connection
     
     def route(self, request):
         return self
@@ -55,7 +61,7 @@ def read(filename):
     file.close()
     return content
 
-def handle_request(request):
+def request_handle(request):
     method = request["method"].lower()
     path = request["path"]
     root = request["config"].root_directory
@@ -73,7 +79,7 @@ def handle_request(request):
                 return Redirect(f"{path}/")
 
             if not os.path.exists(f"{root}{path}"):
-                return Error(error=headers.NOT_FOUND)
+                return Error(headers.NOT_FOUND)
 
             content = read(f"{root}{path}")
             status = headers.OK
@@ -90,7 +96,7 @@ def handle_request(request):
                     content = b""
 
         except PermissionError:
-            return Error(error=headers.NOT_FOUND)
+            return Error(headers.NOT_FOUND)
 
         header = []
 
@@ -115,44 +121,50 @@ def handle_request(request):
         
         return RawResponse(headers.encode(status=status, headers=header).encode() + content)
     else:
-        return Error(error=headers.METHOD_NOT_ALLOWED)
+        return Error(headers.METHOD_NOT_ALLOWED)
 
-def generate_error_message(error, error_html):
+def generate_error_message(error, request):
+    if error in request["config"].error_route:
+        try:
+            return request["config"].error_route[error](request)
+        except:
+            if request["config"].debug:
+                traceback.print_exc()
+            return create_error_message(headers.INTERNAL_SERVER_ERROR, request)
+
+    return create_error_message(error, request)
+
+def create_error_message(error, request):
     if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
         connection = "close"
     else:
         connection = "keep-alive"
 
-    error_message = error_html.format(error, error).encode()
-    response = headers.encode(error, [
+    error_html = request["config"].error_html
+    error_message = error_html.format(error, error)
+
+    return Response(error_message, status=error, header=[
         ("Content-Length", len(error_message)),
         ("Content-Type", "text/html"),
         ("Connection", connection)
-    ]).encode() + error_message
-
-    return response
+    ], connection=(connection == "keep-alive"))
 
 def encode_response(content, status=headers.OK, header=[]):
     default_header = []
 
     if not headers.check_header(header, "Content-Length"):
         default_header.append(("Content-Length", len(content)))
-    
-    if not headers.check_header(header, "Connection"):
-        default_header.append(("Connection", "keep-alive"))
 
-    return headers.encode(status, header + default_header).encode() + content.encode()
-
-def encode_binary_response(content, status=headers.OK, header=[]):
-    default_header = []
-
-    if not headers.check_header(header, "Content-Length"):
-        default_header.append(("Content-Length", len(content)))
-
-    if not headers.check_header(header, "Accept-Ranges"):
+    if type(content) == bytes and not headers.check_header(header, "Accept-Ranges"):
         default_header.append(("Accept-Ranges", "bytes"))
-    
+
     if not headers.check_header(header, "Connection"):
         default_header.append(("Connection", "keep-alive"))
+
+    if type(content) == list or type(content) == dict:
+        content = json.dumps(content)
+
+    if type(content) == str:
+        content = content.encode()
 
     return headers.encode(status, header + default_header).encode() + content

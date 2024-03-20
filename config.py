@@ -1,3 +1,4 @@
+from wshost import *
 #Socket binding address
 host = "0.0.0.0"
 port = 8000
@@ -21,6 +22,9 @@ error_html = """<html>
 <hr><center>WSHost/1.0</center>
 </body>
 </html>"""
+
+error_route = {
+}
 
 
 #Message
