@@ -22,7 +22,8 @@ error_html = """<html>
 <center><h1>{}</h1></center>
 <hr><center>WSHost/1.0</center>
 </body>
-</html>"""
+</html>
+"""
 
 error_route = {
 }

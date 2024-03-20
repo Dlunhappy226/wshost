@@ -1,4 +1,5 @@
 from wshost import responses
+from wshost import encoding
 from wshost import cookies
 from wshost import payload
 from wshost import headers
@@ -92,8 +93,6 @@ class App:
                 
             def generate_error_message(error, request):
                 return response_handle(errors.generate_error_message(error, request))
-                
-            request = {"config": self.config}
 
             raw_request = conn.recv(8193)
 
@@ -102,66 +101,12 @@ class App:
 
             if raw_request == b"\r\n":
                 return True
+            
+            request = {"conn": conn, "addr": addr, "ip": addr[0], "content": raw_request, "config": self.config}
 
             head, header, body = headers.decode(raw_request)
             method, path, protocol = headers.head_decode(head)
             request_path, parameter = headers.path_decode(path)
-
-            if "Content-Length" in header:
-                upload_size = int(header["Content-Length"])
-                if upload_size > self.config.max_upload_size:
-                    return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
-
-                else:
-                    while len(body) != upload_size:
-                        if (len(body) + 8192) > upload_size:
-                            body += conn.recv(upload_size - len(body))
-                            
-                        else:
-                            body += conn.recv(8192)
-
-            elif "Transfer-Encoding" in header:
-                if header["Transfer-Encoding"] == "chunked":
-                    data = b""
-
-                    def read(buffer, body):
-                        read_data = b""
-                        for x in range(buffer):
-                            if body != b"":
-                                read_data += body[:1]
-                                body = body[1:]
-
-                            else:
-                                read_data += conn.recv(1)
-                                
-                        return read_data, body
-
-                    while True:
-                        chunk_size_str = b""
-                        while True:
-                            char, body = read(1, body)
-                            if char == b"\r":
-                                char, body = read(1, body)
-                                break
-
-                            chunk_size_str += char
-
-                        chunk_size = int(chunk_size_str, 16)
-                        if chunk_size == 0:
-                            char, body = read(2, body)
-                            break
-                        
-                        char, body = read(chunk_size, body)
-                        data += char
-                        char, body = read(2, body)
-
-                    if len(body) > self.config.max_upload_size:
-                        return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
-                    
-                    body = data
-
-            elif len(raw_request) > 8192:
-                return generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
 
             request = {
                 "conn": conn,
@@ -177,6 +122,30 @@ class App:
                 "parameter": parameter,
                 "config": self.config
             }
+
+            if "Content-Length" in header:
+                upload_size = int(header["Content-Length"])
+                if upload_size > self.config.max_upload_size:
+                    return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
+
+                else:
+                    while len(body) != upload_size:
+                        if (len(body) + 8192) > upload_size:
+                            body += conn.recv(upload_size - len(body))
+                            
+                        else:
+                            body += conn.recv(8192)
+
+            if "Transfer-Encoding" in header:
+                if header["Transfer-Encoding"] == "chunked":
+                    body = encoding.read_chunked(request)
+                    if body == False:
+                        return generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
+
+            elif len(raw_request) > 8192:
+                return generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
+
+            request["body"] = body
 
             request["cookie"] = cookies.get_cookie(request)
 
