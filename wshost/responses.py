@@ -1,8 +1,8 @@
 from wshost import headers
+from wshost import etags
 import mimetypes
 import traceback
 import datetime
-import hashlib
 import json
 import time
 import os
@@ -88,12 +88,11 @@ def request_handle(request):
                 content_type = "text/plain"
 
             last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", datetime.datetime.utcfromtimestamp(os.path.getmtime(f"{root}{path}")).timetuple())
-            etag = f'"{hashlib.md5(content).hexdigest()}"'
+            etag = etags.generate_etag(content)
 
-            if "If-None-Match" in request["header"]:
-                if request["header"]["If-None-Match"] == etag:
-                    status = headers.NOT_MODIFIED
-                    content = b""
+            if etags.check_etag(request, etag):
+                status = headers.NOT_MODIFIED
+                content = b""
 
         except PermissionError:
             return Error(headers.NOT_FOUND)
