@@ -1,5 +1,6 @@
 from wshost import responses
 from wshost import websocket
+from wshost import sessions
 from wshost import cookies
 from wshost import payload
 from wshost import headers
