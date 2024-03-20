@@ -1,15 +1,6 @@
 from urllib.parse import unquote_plus as parse_form
-from urllib.parse import unquote as parse_url
+from wshost import headers
 
-
-def header_decode(header):
-    headers = header.split("; ")
-    fields = {}
-    for x in headers:
-        field, sep, value = x.partition("=")
-        fields[field] = value
-
-    return fields
 
 def form_decode(request):
     fields = request["body"].decode().split("&")
@@ -31,7 +22,7 @@ def content_decode(content):
     return headers, body
 
 def multipart_decode(request):
-    boundary = header_decode(request["header"]["Content-Type"])["boundary"]
+    boundary = headers.header_decode(request["header"]["Content-Type"])["boundary"]
     body, sep, end = request["body"].partition(f"\r\n--{boundary}--".encode())
     fields = body.split(f"--{boundary}\r\n".encode())
     fields.pop(0)
@@ -41,9 +32,3 @@ def multipart_decode(request):
         form_content.append((header, content_body))
         
     return form_content
-
-def get_cookie(request):
-    if "Cookie" not in request["header"]:
-        return []
-    
-    return header_decode(request["header"]["Cookie"])

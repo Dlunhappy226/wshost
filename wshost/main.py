@@ -1,5 +1,6 @@
 from wshost import responses
-from wshost import contents
+from wshost import cookies
+from wshost import payload
 from wshost import headers
 import traceback
 import threading
@@ -179,14 +180,14 @@ class App:
                 "config": self.config
             }
 
-            request["cookie"] = contents.get_cookie(request)
+            request["cookie"] = cookies.get_cookie(request)
 
             if "Content-Type" in header:
                 if header["Content-Type"] == "application/x-www-form-urlencoded":
-                    request["form"] = contents.form_decode(request)
+                    request["form"] = payload.form_decode(request)
 
-                if list(contents.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
-                    request["form"] = contents.multipart_decode(request)
+                if list(headers.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
+                    request["form"] = payload.multipart_decode(request)
             
             handler = responses.request_handle
 
