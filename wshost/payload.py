@@ -1,4 +1,5 @@
 from urllib.parse import unquote_plus as parse_form
+from urllib.parse import unquote as parse_url
 from wshost import headers
 
 
