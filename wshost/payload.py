@@ -30,6 +30,13 @@ def multipart_decode(request):
     form_content = []
     for x in fields:
         header, content_body = content_decode(x)
+        disposition = headers.header_decode(header["Content-Disposition"])
+        if "name" in disposition:
+            header["name"] = disposition["name"].strip('"')
+
+        if "filename" in disposition:
+            header["filename"] = disposition["filename"].strip('"')
+
         form_content.append((header, content_body))
         
     return form_content
