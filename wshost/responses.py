@@ -114,14 +114,17 @@ def request_handle(request):
             except UnicodeDecodeError:
                 header.append(("Accept-Ranges", "bytes"))
 
-        header.append(("Connection", "keep-alive"))
+        if "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive":
+            header.append(("Connection", "keep-alive"))
+        else:
+            header.append(("Connection", "close"))
         header.append(("ETag", etag))
         
         return RawResponse(headers.encode(status=status, headers=header).encode() + content)
     else:
         return Error(headers.METHOD_NOT_ALLOWED)
 
-def encode_response(content, status=headers.OK, header=[]):
+def encode_response(content, status=headers.OK, header=[], connection=True):
     default_header = []
 
     if not headers.check_header(header, "Content-Length"):
@@ -131,8 +134,10 @@ def encode_response(content, status=headers.OK, header=[]):
         default_header.append(("Accept-Ranges", "bytes"))
 
     if not headers.check_header(header, "Connection"):
-        default_header.append(("Connection", "keep-alive"))
-
+        if connection:
+            default_header.append(("Connection", "keep-alive"))
+        else: 
+            default_header.append(("Connection", "close"))
     if type(content) == list or type(content) == dict:
         content = json.dumps(content)
 

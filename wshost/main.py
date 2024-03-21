@@ -57,33 +57,34 @@ class App:
 
     def request_handle(self, conn, addr):
         try:
-            def response_handle(response):
+            def response_handle(response, request):
+                connection = "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
                 if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
-                    conn.sendall(responses.encode_response(response))
-                    return True
+                    conn.sendall(responses.encode_response(response, connection=connection))
+                    return connection
                 
                 elif type(response) == bool:
                     return response
                 
                 elif type(response) == responses.Response:
                     if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
-                        conn.sendall(responses.encode_response(response.content, response.status, response.header))
-                        return response.connection
+                        conn.sendall(responses.encode_response(response.content, response.status, response.header, connection=(response.connection and connection)))
+                        return response.connection and connection
                     
                     return False
                 
                 elif type(response) == responses.RawResponse:
                     conn.sendall(response.response)
-                    return response.connection
+                    return response.connection and connection
 
                 elif type(response) == responses.Route:
                     request["path"] = response.path
                     conn.sendall(responses.request_handle(request).response)
-                    return response.connection
+                    return response.connection and connection
                 
                 elif type(response) == responses.Redirect:
-                    conn.sendall(responses.encode_response("", response.status, [("Location", response.url)]))
-                    return response.connection
+                    conn.sendall(responses.encode_response("", response.status, [("Location", response.url)], connection=(response.connection and connection)))
+                    return response.connection and connection
                 
                 elif type(response) == responses.Error:
                     return generate_error_message(response.error, request)
@@ -92,7 +93,7 @@ class App:
                     return False
                 
             def generate_error_message(error, request):
-                return response_handle(errors.generate_error_message(error, request))
+                return response_handle(errors.generate_error_message(error, request), request)
 
             raw_request = conn.recv(8193)
 
@@ -165,7 +166,7 @@ class App:
 
             try:
                 response = handler(request)
-                return response_handle(response)
+                return response_handle(response, request)
                 
             except:
                 if self.config.debug:
