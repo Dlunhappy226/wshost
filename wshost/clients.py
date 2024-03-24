@@ -1,3 +1,4 @@
+from wshost import exceptions
 from wshost import responses
 from wshost import encoding
 from wshost import cookies
@@ -15,63 +16,94 @@ class Clients:
         self.config = config
 
     def run_forever(self):
-        while self.request_handle(self.conn, self.addr):
+        while self.request_handle():
             pass
 
         self.conn.close()
+
+    def readline(self, buffer=None):
+        if buffer is None:
+            buffer = self.config.buffer_size
+
+        data = b""
+        while True:
+            char = self.conn.recv(1)
+            if char == b"":
+                raise exceptions.NoData
+            
+            data += char
+            if data.endswith(b"\r\n"):
+                return data[:-2]
+            
+            if len(data) == buffer:
+                raise exceptions.OverBuffer
     
-    def request_handle(self, conn, addr):
+    def request_handle(self):
         try:
-            raw_request = conn.recv(8193)
+            request = {"conn": self.conn, "addr": self.addr, "ip": self.addr[0], "config": self.config}
 
-            if raw_request == b"":
+            try:
+                first_line = self.readline()
+
+            except exceptions.NoData:
                 return False
+            
+            except exceptions.OverBuffer:
+                return self.generate_error_message(headers.URI_TOO_LARGE, request)
 
-            if raw_request == b"\r\n":
+            if first_line == b"":
                 return True
             
-            request = {"conn": conn, "addr": addr, "ip": addr[0], "content": raw_request, "config": self.config}
+            method, path, protocol, protocol_version = headers.first_line_decode(first_line.decode())
+            path, parameter = headers.path_decode(path)
 
-            head, header, body = headers.decode(raw_request)
-            method, path, protocol = headers.head_decode(head)
-            request_path, parameter = headers.path_decode(path)
+            header = b""
+
+            while True:
+                try:
+                    line = self.readline(buffer=self.config.buffer_size - len(header))
+                    if line == b"":
+                        break
+
+                    header += line + b"\r\n"
+                except exceptions.OverBuffer:
+                    return self.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
+                
+            header = headers.decode(header)
 
             request = {
-                "conn": conn,
-                "addr": addr,
-                "ip": addr[0],
-                "content": raw_request,
-                "head": head,
+                "conn": self.conn,
+                "addr": self.addr,
+                "ip": self.addr[0],
                 "header": header,
-                "body": body,
                 "method": method,
                 "protocol": protocol,
-                "path": request_path,
+                "protocol_version": protocol_version,
+                "path": path,
                 "parameter": parameter,
                 "config": self.config
             }
 
+            body = b""
+
             if "Content-Length" in header:
                 upload_size = int(header["Content-Length"])
                 if upload_size > self.config.max_upload_size:
-                    return self.generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
+                    return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
 
                 else:
                     while len(body) != upload_size:
-                        if (len(body) + 8192) > upload_size:
-                            body += conn.recv(upload_size - len(body))
+                        if (len(body) + self.config.buffer_size) > upload_size:
+                            body += self.conn.recv(upload_size - len(body))
                             
                         else:
-                            body += conn.recv(8192)
+                            body += self.conn.recv(self.config.buffer_size)
 
             if "Transfer-Encoding" in header:
                 if header["Transfer-Encoding"] == "chunked":
                     body = encoding.read_chunked(request)
                     if body == False:
-                        return self.generate_error_message(headers.PAYLOAD_TOO_LARGE, request)
-
-            elif len(raw_request) > 8192:
-                return self.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
+                        return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
 
             request["body"] = body
 
@@ -87,7 +119,7 @@ class Clients:
             handler = responses.request_handle
 
             for key in self.config.route:
-                if fnmatch.fnmatch(request_path, key):
+                if fnmatch.fnmatch(path, key):
                     handler = self.config.route[key]         
                     break
 
@@ -110,7 +142,7 @@ class Clients:
             return False
         
     def response_handle(self, response, request):
-        connection = "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
+        connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
         if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
             self.conn.sendall(responses.encode_response(response, connection=connection))
             return connection

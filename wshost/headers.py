@@ -17,7 +17,8 @@ FORBIDDEN = "403 Forbidden"
 NOT_FOUND = "404 Not Found"
 METHOD_NOT_ALLOWED = "405 Method Not Allowed"
 GONE = "410 Gone"
-PAYLOAD_TOO_LARGE = "413 Payload Too Large"
+CONTENT_TOO_LARGE = "413 Content Too Large"
+URI_TOO_LARGE = "414 URI Too Long"
 REQUEST_HEADER_FIELDS_TOO_LARGE = "431 Request Header Fields Too Large"
 
 INTERNAL_SERVER_ERROR = "500 Internal Server Error"
@@ -50,20 +51,20 @@ def encode(status=OK, headers=[]):
     header += "\r\n"
     return header
 
-def decode(request):
-    header, sep, body = request.partition(b"\r\n\r\n")
+def decode(header):
     fields = header.decode().split("\r\n")
-    head = fields.pop(0)
+    fields.pop()
     headers = {}
     for x in fields:
         field, sep, value = x.partition(":")
         headers[field] = value.lstrip()
 
-    return head, headers, body
+    return headers
 
-def head_decode(head):
-    method, path, protocol = head.split(" ")
-    return method, path, protocol
+def first_line_decode(first_line):
+    method, path, protocol = first_line.split(" ")
+    protocol, sep, version = protocol.partition("/")
+    return method, path, protocol, version
 
 def path_decode(path):
     path, sep, raw_parameter = path.partition("?")

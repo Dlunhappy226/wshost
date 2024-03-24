@@ -8,6 +8,7 @@ port = 8000
 #File config
 root_directory = "html"
 max_upload_size = 1024 * 1024
+buffer_size = 8 * 1024
 
 
 #Routing

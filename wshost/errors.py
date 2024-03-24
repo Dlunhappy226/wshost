@@ -15,7 +15,7 @@ def generate_error_message(error, request):
     return create_error_message(error, request)
 
 def create_error_message(error, request):
-    if error == headers.BAD_REQUEST or error == headers.PAYLOAD_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
+    if error == headers.BAD_REQUEST or error == headers.CONTENT_TOO_LARGE or error == headers.REQUEST_HEADER_FIELDS_TOO_LARGE:
         connection = "close"
     else:
         connection = "keep-alive"
