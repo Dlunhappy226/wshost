@@ -6,7 +6,7 @@ import base64
 def unauthorized(realm="Acess to the staging site."):
     responses.Response("", status=headers.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
 
-def check_auth(request):
+def get_auth(request):
     if "Authorization" in request["header"]:
         auth_type, sep, auth_key = request["header"]["Authorization"].partition(" ")
         if auth_type == "Basic":
