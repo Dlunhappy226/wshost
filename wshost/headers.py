@@ -46,7 +46,8 @@ def encode(status=OK, headers=[]):
         header += f"{field}: {default_headers[field]}\r\n"
 
     for field in headers:
-        header += f"{field[0]}: {field[1]}\r\n"
+        if field[1] != "":
+            header += f"{field[0]}: {field[1]}\r\n"
 
     header += "\r\n"
     return header

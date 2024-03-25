@@ -167,7 +167,7 @@ class Clients:
             return response.connection and connection
         
         elif type(response) == responses.Redirect:
-            self.conn.sendall(responses.encode_response("", response.status, response.header + [("Location", response.url)], connection=(response.connection and connection)))
+            self.conn.sendall(responses.encode_response("", response.status, response.header + [("Location", response.url), ("Content-Length", "")], connection=(response.connection and connection)))
             return response.connection and connection
         
         elif type(response) == responses.Error:
