@@ -3,3 +3,6 @@ class NoData(Exception):
 
 class OverBuffer(Exception):
     pass
+
+class BadRequest(Exception):
+    pass

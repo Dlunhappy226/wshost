@@ -27,7 +27,11 @@ class Clients:
 
         data = b""
         while True:
-            char = self.conn.recv(1)
+            try:
+                char = self.conn.recv(1)        
+            except:
+                raise exceptions.BadRequest
+            
             if char == b"":
                 raise exceptions.NoData
             
@@ -39,12 +43,11 @@ class Clients:
                 raise exceptions.OverBuffer
     
     def request_handle(self):
-        try:
-            request = {"conn": self.conn, "addr": self.addr, "ip": self.addr[0], "config": self.config}
+        request = {"conn": self.conn, "addr": self.addr, "ip": self.addr[0], "config": self.config}
 
+        try:
             try:
                 first_line = self.readline()
-
             except exceptions.NoData:
                 return False
             
@@ -54,8 +57,11 @@ class Clients:
             if first_line == b"":
                 return True
             
-            method, path, protocol, protocol_version = headers.first_line_decode(first_line.decode())
-            path, parameter = headers.path_decode(path)
+            try:
+                method, path, protocol, protocol_version = headers.first_line_decode(first_line.decode())
+                path, parameter = headers.path_decode(path)
+            except:
+                raise exceptions.BadRequest
 
             header = b""
 
@@ -66,6 +72,7 @@ class Clients:
                         break
 
                     header += line + b"\r\n"
+
                 except exceptions.OverBuffer:
                     return self.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
                 
@@ -87,27 +94,44 @@ class Clients:
             body = b""
 
             if "Content-Length" in header:
-                upload_size = int(header["Content-Length"])
+                try:
+                    upload_size = int(header["Content-Length"])
+                except:
+                    raise exceptions.BadRequest
+                
                 if upload_size > self.config.max_upload_size:
                     return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
 
                 else:
                     while len(body) != upload_size:
                         if (len(body) + self.config.buffer_size) > upload_size:
-                            body += self.conn.recv(upload_size - len(body))
+                            try:
+                                body += self.conn.recv(upload_size - len(body))
+                            except:
+                                raise exceptions.BadRequest
                             
                         else:
-                            body += self.conn.recv(self.config.buffer_size)
+                            try:
+                                body += self.conn.recv(self.config.buffer_size)
+                            except:
+                                raise exceptions.BadRequest
 
             if "Transfer-Encoding" in header:
                 if header["Transfer-Encoding"] == "chunked":
-                    body = encoding.read_chunked(request)
+                    try:
+                        body = encoding.read_chunked(request)
+                    except:
+                        raise exceptions.BadRequest
+
                     if body == False:
                         return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
 
             request["body"] = body
 
-            request["cookie"] = cookies.get_cookie(request)
+            try:
+                request["cookie"] = cookies.get_cookie(request)
+            except:
+                raise exceptions.BadRequest
 
             if "Content-Type" in header:
                 if header["Content-Type"] == "application/x-www-form-urlencoded":
@@ -118,28 +142,23 @@ class Clients:
 
             for key in self.config.route:
                 if fnmatch.fnmatch(path, key):
-                    handler = self.config.route[key]
-
-                    try:
-                        response = handler(request)
-                        if not (type(response) == responses.Error and response.error == headers.NOT_FOUND):
-                            return self.response_handle(response, request)
-                        
-                    except:
-                        if self.config.debug:
-                            traceback.print_exc()
-
-                        return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
+                    response = self.config.route[key](request)
+                    if not (type(response) == responses.Error and response.error == headers.NOT_FOUND):
+                        return self.response_handle(response, request)
             
             return self.response_handle(responses.request_handle(request), request)
-
-        except:
+        
+        except exceptions.BadRequest:
             try:
                 return self.generate_error_message(headers.BAD_REQUEST, request)
             except:
-                pass
+                return False
 
-            return False
+        except:
+            if self.config.debug:
+                traceback.print_exc()
+
+            return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
         
     def response_handle(self, response, request):
         connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"

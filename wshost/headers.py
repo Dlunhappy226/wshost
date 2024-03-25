@@ -1,3 +1,4 @@
+from wshost import exceptions
 import urllib.parse
 import time
 
@@ -57,6 +58,9 @@ def decode(header):
     fields.pop()
     headers = {}
     for x in fields:
+        if ":" not in x:
+            raise exceptions.BadRequest
+        
         field, sep, value = x.partition(":")
         headers[field] = value.lstrip()
 
