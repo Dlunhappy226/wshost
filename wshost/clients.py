@@ -120,18 +120,20 @@ class Clients:
 
             for key in self.config.route:
                 if fnmatch.fnmatch(path, key):
-                    handler = self.config.route[key]         
-                    break
+                    handler = self.config.route[key]
 
-            try:
-                response = handler(request)
-                return self.response_handle(response, request)
-                
-            except:
-                if self.config.debug:
-                    traceback.print_exc()
+                    try:
+                        response = handler(request)
+                        if not (type(response) == responses.Error and response.error == headers.NOT_FOUND):
+                            return self.response_handle(response, request)
+                        
+                    except:
+                        if self.config.debug:
+                            traceback.print_exc()
 
-                return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
+                        return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
+            
+            return self.response_handle(responses.request_handle(request), request)
 
         except:
             try:
