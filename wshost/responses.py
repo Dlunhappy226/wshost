@@ -28,9 +28,10 @@ class RawResponse:
 
 
 class Redirect:
-    def __init__(self, url, status=headers.FOUND, connection=True):
+    def __init__(self, url, status=headers.FOUND, header=[], connection=True):
         self.url = url
         self.status = status
+        self.header = header
         self.connection = connection
 
     def route(self, request):
@@ -138,6 +139,7 @@ def encode_response(content, status=headers.OK, header=[], connection=True):
             default_header.append(("Connection", "keep-alive"))
         else: 
             default_header.append(("Connection", "close"))
+            
     if type(content) == list or type(content) == dict:
         content = json.dumps(content)
 
