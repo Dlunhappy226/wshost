@@ -115,8 +115,6 @@ class Clients:
 
                 if list(headers.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
                     request["form"] = payload.multipart_decode(request)
-            
-            handler = responses.request_handle
 
             for key in self.config.route:
                 if fnmatch.fnmatch(path, key):
