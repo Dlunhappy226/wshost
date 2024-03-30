@@ -38,7 +38,7 @@ def encode(status=OK, headers=[]):
         default_headers["Server"] = "wshost"
 
     if not check_header(headers, "Date"):
-        utctime = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+        utctime = encode_time(time.gmtime())
         default_headers["Date"] = utctime
         
     header = "HTTP/1.1 {}\r\n".format(status) 
@@ -90,4 +90,7 @@ def header_decode(header):
         fields[field] = value
 
     return fields
+
+def encode_time(time_code):
+    return time.strftime("%a, %d %b %Y %H:%M:%S GMT", time_code)
     

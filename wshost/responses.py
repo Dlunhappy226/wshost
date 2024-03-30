@@ -73,7 +73,7 @@ def request_handle(request):
             if content_type == None:
                 content_type = "text/plain"
 
-            last_modified = time.strftime("%a, %d %b %Y %H:%M:%S GMT", datetime.datetime.utcfromtimestamp(os.path.getmtime(f"{root}{path}")).timetuple())
+            last_modified = etags.get_last_modified(f"{root}{path}")
             etag = etags.generate_etag(content)
 
             if etags.check_etag(request, etag):

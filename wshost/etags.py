@@ -1,4 +1,7 @@
+from wshost import headers
+import datetime
 import hashlib
+import os
 
 
 def generate_etag(content):
@@ -10,3 +13,6 @@ def check_etag(request, etag):
             return True
               
     return False
+
+def get_last_modified(path):
+    return headers.encode_time(datetime.datetime.utcfromtimestamp(os.path.getmtime(path)).timetuple())
