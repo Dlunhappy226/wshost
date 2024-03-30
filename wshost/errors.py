@@ -6,7 +6,10 @@ import traceback
 def generate_error_message(error, request):
     if error in request["config"].error_route:
         try:
-            return request["config"].error_route[error](request)
+            if callable(type(request["config"].error_route[error])):
+                return request["config"].error_route[error](request)
+            else:
+                return request["config"].error_route[error]
         except:
             if request["config"].debug:
                 traceback.print_exc()
