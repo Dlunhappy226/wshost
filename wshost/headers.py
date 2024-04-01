@@ -84,7 +84,7 @@ def path_decode(path):
     return urllib.parse.unquote(path), parameters
 
 def header_decode(header):
-    headers = re.split(r";(?=(?:[^\"]*[\"][^\"]*[\"])*[^\"]*$) ", header)
+    headers = re.split(r"; (?=(?:[^\"]*[\"][^\"]*[\"])*[^\"]*$)", header)
     fields = {}
     for x in headers:
         field, sep, value = x.partition("=")
