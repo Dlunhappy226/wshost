@@ -48,8 +48,6 @@ class Clients:
         try:
             try:
                 first_line = self.readline()
-            except exceptions.NoData:
-                return False
             
             except exceptions.OverBuffer:
                 return self.generate_error_message(headers.URI_TOO_LARGE, request)
@@ -156,6 +154,12 @@ class Clients:
             try:
                 return self.generate_error_message(headers.BAD_REQUEST, request)
             except:
+                return False
+            
+        except OSError:
+            return False
+        
+        except exceptions.NoData:
                 return False
 
         except:
