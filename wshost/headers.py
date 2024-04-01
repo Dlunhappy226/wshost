@@ -1,6 +1,7 @@
 from wshost import exceptions
 import urllib.parse
 import time
+import re
 
 
 SWITCHING_PROTOCOLS = "101 Switching Protocols"
@@ -51,7 +52,7 @@ def encode(status=OK, headers=[]):
             header += f"{field[0]}: {field[1]}\r\n"
 
     header += "\r\n"
-    return header
+    return header.encode()
 
 def decode(header):
     fields = header.decode().split("\r\n")
@@ -83,7 +84,7 @@ def path_decode(path):
     return urllib.parse.unquote(path), parameters
 
 def header_decode(header):
-    headers = header.split("; ")
+    headers = re.split(r";(?=(?:[^\"]*[\"][^\"]*[\"])*[^\"]*$) ", header)
     fields = {}
     for x in headers:
         field, sep, value = x.partition("=")

@@ -1,6 +1,8 @@
 from urllib.parse import unquote_plus as parse_form
 from urllib.parse import unquote as parse_url
+from wshost import exceptions
 from wshost import headers
+import urllib.parse
 
 
 def form_decode(request):
@@ -8,7 +10,7 @@ def form_decode(request):
     form = {}
     for x in fields:
         field, sep, value = x.partition("=")
-        form[parse_form(field)] = parse_form(value)
+        form[urllib.parse.unquote_plus(field)] = urllib.parse.unquote_plus(value)
 
     return form
 
@@ -24,19 +26,26 @@ def content_decode(content):
 
 def multipart_decode(request):
     boundary = headers.header_decode(request["header"]["Content-Type"])["boundary"]
-    body, sep, end = request["body"].partition(f"\r\n--{boundary}--".encode())
-    fields = body.split(f"--{boundary}\r\n".encode())
+    fields = request["body"].split(f"--{boundary}".encode())
     fields.pop(0)
-    form_content = []
+    if fields.pop() != b"--\r\n":
+        raise exceptions.BadRequest
+    
+    form_content = {}
+
     for x in fields:
-        header, content_body = content_decode(x)
+        header, content_body = content_decode(x[2:-2])
         disposition = headers.header_decode(header["Content-Disposition"])
-        if "name" in disposition:
-            header["name"] = disposition["name"].strip('"')
 
         if "filename" in disposition:
             header["filename"] = disposition["filename"].strip('"')
 
-        form_content.append((header, content_body))
+        name = disposition["name"].strip('"')
+
+        if name in form_content:
+            form_content[name].append((header, content_body))
+
+        else:
+            form_content[name] = [(header, content_body)]
         
     return form_content

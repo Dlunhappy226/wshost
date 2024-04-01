@@ -61,7 +61,7 @@ class Websocket:
             ("Sec-WebSocket-Accept", websocket_key)
         ])
 
-        self.conn.sendall(response.encode())
+        self.conn.sendall(response)
         clients.append(self)
 
     def generate_key(self, key):

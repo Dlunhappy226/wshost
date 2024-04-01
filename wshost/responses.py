@@ -132,7 +132,7 @@ def encode_response(content, status=headers.OK, header=[], connection=True):
     if type(content) == str:
         content = content.encode()
 
-    return headers.encode(status, header + default_header).encode() + content
+    return headers.encode(status, header + default_header) + content
        
 def response_handle(response, request):
     connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
