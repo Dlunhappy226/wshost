@@ -17,7 +17,7 @@ def init():
         os.makedirs("html")
 
     for x in file_download:
-        print(f"Downloading {x}")
+        print(f"Downloading {x} ({list(file_download).index(x) + 1}/{len(file_download)})")
         data = urllib.request.urlopen(file_download[x])
         file = open(x, "wb+")
         file.write(data.read())

@@ -1,4 +1,5 @@
-from wshost import *
+from route import route, error_route
+
 
 #Socket binding address
 host = "0.0.0.0"
@@ -11,11 +12,6 @@ max_upload_size = 1024 * 1024
 buffer_size = 8 * 1024
 
 
-#Routing
-route = {
-}
-
-
 #Error page
 error_html = """<html>
 <head><title>{}</title></head>
@@ -25,9 +21,6 @@ error_html = """<html>
 </body>
 </html>
 """
-
-error_route = {
-}
 
 
 #Message
