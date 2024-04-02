@@ -2,9 +2,7 @@ from wshost import headers
 from wshost import errors
 from wshost import etags
 import mimetypes
-import datetime
 import json
-import time
 import os
 
 
