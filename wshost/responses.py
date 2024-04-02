@@ -107,7 +107,7 @@ def request_handle(request):
             header.append(("Connection", "close"))
         header.append(("ETag", etag))
         
-        return RawResponse(headers.encode(status=status, headers=header).encode() + content)
+        return RawResponse(headers.encode(status=status, headers=header) + content)
     else:
         return Error(headers.METHOD_NOT_ALLOWED)
 

@@ -118,11 +118,12 @@ class Clients:
                 if header["Transfer-Encoding"] == "chunked":
                     try:
                         body = encoding.read_chunked(request)
+                    
+                    except exceptions.OverBuffer:
+                        return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
+                    
                     except:
                         raise exceptions.BadRequest
-
-                    if body == False:
-                        return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
 
             request["body"] = body
 

@@ -1,3 +1,6 @@
+from wshost import exceptions
+
+
 def read_chunked(request):
     def read(buffer):
         read_data = b""
@@ -20,7 +23,7 @@ def read_chunked(request):
 
         chunk_size = int(chunk_size_str, 16)
         if (len(data) + chunk_size) > request["config"].max_upload_size:
-            return False
+            raise exceptions.OverBuffer
         
         if chunk_size == 0:
             char = read(2)
