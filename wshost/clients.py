@@ -167,7 +167,7 @@ class Clients:
                 else:
                     response = self.config.route[x]
 
-                if not (type(response) == responses.Error and response.error == headers.NOT_FOUND and response.passing):
+                if not ((type(response) == responses.Error and response.error == headers.NOT_FOUND and response.passing) or response == None):
                     return self.response_handle(response, request)
                 
         return self.response_handle(responses.request_handle(request), request)

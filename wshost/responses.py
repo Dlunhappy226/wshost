@@ -33,7 +33,7 @@ class Route:
  
 
 class Error:
-    def __init__(self, error, passing=True):
+    def __init__(self, error, passing=False):
         self.error = error
         self.passing = passing
 
