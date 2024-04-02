@@ -139,17 +139,7 @@ class Clients:
                 if list(headers.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
                     request["form"] = payload.multipart_decode(request)
 
-            for x in self.config.route:
-                if fnmatch.fnmatch(path, x):
-                    if callable(self.config.route[x]):
-                        response = self.config.route[x](request)
-                    else:
-                        response = self.config.route[x]
-
-                    if not (type(response) == responses.Error and response.error == headers.NOT_FOUND):
-                        return responses.response_handle(response, request)
-            
-            return responses.response_handle(responses.request_handle(request), request)
+            self.handle_request(request)
         
         except exceptions.BadRequest:
             try:
@@ -169,6 +159,53 @@ class Clients:
 
             return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
         
+    def handle_request(self, request):
+        for x in self.config.route:
+            if fnmatch.fnmatch(request["path"], x):
+                if callable(self.config.route[x]):
+                    response = self.config.route[x](request)
+                else:
+                    response = self.config.route[x]
+
+                if not (type(response) == responses.Error and response.error == headers.NOT_FOUND and response.passing):
+                    return self.response_handle(response, request)
+                
+        return self.response_handle(responses.request_handle(request), request)
+        
     def generate_error_message(self, error, request):
-        return responses.response_handle(errors.generate_error_message(error, request), request)
+        return self.response_handle(errors.generate_error_message(error, request), request)
     
+    def response_handle(self, response, request):
+        connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
+        if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
+            self.conn.sendall(responses.encode_response(response, connection=connection))
+            return connection
+        
+        elif type(response) == bool:
+            return response
+        
+        elif type(response) == responses.Response:
+            if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
+                self.conn.sendall(responses.encode_response(response.content, response.status, response.header, connection=(response.connection and connection)))
+                return response.connection and connection
+            
+            return False
+        
+        elif type(response) == responses.RawResponse:
+            self.conn.sendall(response.response)
+            return response.connection and connection
+
+        elif type(response) == responses.Route:
+            request["path"] = response.path
+            return self.response_handle(self.handle_request(request), request)
+        
+        elif type(response) == responses.Redirect:
+            self.conn.sendall(responses.encode_response("", response.status, response.header + [("Location", response.url), ("Content-Length", "")], connection=(response.connection and connection)))
+            return response.connection and connection
+        
+        elif type(response) == responses.Error:
+            return self.generate_error_message(response.error, request)
+        
+        else:
+            return False
+        

@@ -1,5 +1,4 @@
 from wshost import headers
-from wshost import errors
 from wshost import etags
 import mimetypes
 import json
@@ -29,14 +28,14 @@ class Redirect:
 
 
 class Route:
-    def __init__(self, path, connection=True):
+    def __init__(self, path):
         self.path = path
-        self.connection = connection
  
 
 class Error:
-    def __init__(self, error):
+    def __init__(self, error, passing=True):
         self.error = error
+        self.passing = passing
 
 
 def read(filename):
@@ -131,38 +130,3 @@ def encode_response(content, status=headers.OK, header=[], connection=True):
         content = content.encode()
 
     return headers.encode(status, header + default_header) + content
-       
-def response_handle(response, request):
-    connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
-    if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
-        request["conn"].sendall(encode_response(response, connection=connection))
-        return connection
-    
-    elif type(response) == bool:
-        return response
-    
-    elif type(response) == Response:
-        if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
-            request["conn"].sendall(encode_response(response.content, response.status, response.header, connection=(response.connection and connection)))
-            return response.connection and connection
-        
-        return False
-    
-    elif type(response) == RawResponse:
-        request["conn"].sendall(response.response)
-        return response.connection and connection
-
-    elif type(response) == Route:
-        request["path"] = response.path
-        request["conn"].sendall(request_handle(request).response)
-        return response.connection and connection
-    
-    elif type(response) == Redirect:
-        request["conn"].sendall(encode_response("", response.status, response.header + [("Location", response.url), ("Content-Length", "")], connection=(response.connection and connection)))
-        return response.connection and connection
-    
-    elif type(response) == Error:
-        return response_handle(errors.generate_error_message(response.error, request), request)
-    
-    else:
-        return False
