@@ -111,7 +111,7 @@ def encode_response(content, status=statuses.OK, header=[], connection=True, con
         default_header.append(("Content-Length", len(content)))
 
     if (len(content) == 0) and (status == statuses.OK):
-        status == statuses.NO_CONTENT
+        status = statuses.NO_CONTENT
 
     default_header += header
 
