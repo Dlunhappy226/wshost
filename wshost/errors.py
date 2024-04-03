@@ -24,16 +24,8 @@ def generate_error_message(error, request):
     return create_error_message(error, request)
 
 def create_error_message(error, request):
-    if error in [statuses.BAD_REQUEST, statuses.CONTENT_TOO_LARGE, statuses.REQUEST_HEADER_FIELDS_TOO_LARGE]:
-        connection = "close"
-    else:
-        connection = "keep-alive"
-
     error_html = request["config"].error_html
     error_message = error_html.format(error, error)
+    connection = error not in [statuses.BAD_REQUEST, statuses.CONTENT_TOO_LARGE, statuses.REQUEST_HEADER_FIELDS_TOO_LARGE]
 
-    return responses.Response(error_message, status=error, header=[
-        ("Content-Length", len(error_message)),
-        ("Content-Type", "text/html"),
-        ("Connection", connection)
-    ], connection=(connection == "keep-alive"))
+    return responses.Response(error_message, status=error, connection=connection, content_type="text/html")

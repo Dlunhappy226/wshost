@@ -48,7 +48,7 @@ def read(filename):
     file.close()
     return content
 
-def request_handle(request):
+def request_handle(request, no_etag=False):
     method = request["method"].lower()
     path = request["path"]
     root = request["config"].root_directory
@@ -74,11 +74,15 @@ def request_handle(request):
             if content_type == None:
                 content_type = "text/plain"
 
-            last_modified = etags.get_last_modified(f"{root}{path}")
-            etag = etags.generate_etag(content)
+            if not no_etag:
+                last_modified = [("Last-Modified", etags.get_last_modified(f"{root}{path}"))]
+                etag = etags.generate_etag(content)
 
-            if etags.check_etag(request, etag):
-                return etags.not_modified(content, last_modified)
+                if etags.check_etag(request, etag):
+                    return etags.not_modified(content, last_modified)
+            
+            else:
+                last_modified = []
             
         except PermissionError:
             return Error(statuses.NOT_FOUND)
@@ -88,7 +92,7 @@ def request_handle(request):
         except UnicodeDecodeError:
             pass
 
-        return Response(content, header=[("Last-Modified", last_modified)], content_type=content_type, etag=True, no_content=(method == "head"))
+        return Response(content, header=last_modified, content_type=content_type, etag=(not no_etag), no_content=(method == "head"))
     else:
         return Error(statuses.METHOD_NOT_ALLOWED)
 

@@ -146,7 +146,7 @@ class Clients:
         return self.response_handle(errors.generate_error_message(error, request), request, error)
     
     def response_handle(self, response, request, status=statuses.OK):
-        connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
+        connection = ("header" in request) and ("Connection" in request["header"]) and (request["header"]["Connection"] == "keep-alive")
         if type(response) in [str, bytes, list, dict]:
             self.conn.sendall(responses.encode_response(response, connection=connection, status=status))
             return connection
@@ -156,6 +156,9 @@ class Clients:
         
         elif type(response) == responses.Response:
             if type(response.content) in [str, bytes, list, dict]:
+                if status != statuses.OK and response.status == statuses.OK:
+                    response.status = status
+
                 self.conn.sendall(responses.encode_response(
                     response.content,
                     status=response.status,
@@ -165,8 +168,8 @@ class Clients:
                     etag=response.etag,
                     no_content=response.no_content
                 ))
+
                 return response.connection and connection
-            
             return False
         
         elif type(response) == responses.RawResponse:
@@ -175,7 +178,7 @@ class Clients:
 
         elif type(response) == responses.Route:
             request["path"] = response.path
-            return self.response_handle(responses.request_handle(request), request)
+            return self.response_handle(responses.request_handle(request, no_etag=(status != statuses.OK)), request, status=status)
         
         elif type(response) == responses.Redirect:
             self.conn.sendall(responses.encode_response(
