@@ -1,6 +1,6 @@
 from wshost import exceptions
 from wshost import responses
-from wshost import encoding
+from wshost import encodings
 from wshost import cookies
 from wshost import payload
 from wshost import headers
@@ -117,7 +117,7 @@ class Clients:
             if "Transfer-Encoding" in header:
                 if header["Transfer-Encoding"] == "chunked":
                     try:
-                        body = encoding.read_chunked(request)
+                        body = encodings.read_chunked(request)
                     
                     except exceptions.OverBuffer:
                         return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
