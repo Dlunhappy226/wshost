@@ -9,7 +9,7 @@ def get_cookie(request):
     return headers.header_decode(request["header"]["Cookie"])
 
 def set_cookie(name, value, option=""):
-    if option == "":
+    if not option:
         return ("Set-Cookie", f"{name}={urllib.parse.quote(value)}")
     else:
         return ("Set-Cookie", f"{name}={urllib.parse.quote(value)}; {option}")

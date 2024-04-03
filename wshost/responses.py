@@ -57,7 +57,7 @@ def request_handle(request, no_etag=False):
     
     if method in ["get", "head"]:
         try:
-            if filename == "":
+            if not filename:
                 path = f"{path}/index.html"
                 filename = "index.html"
 

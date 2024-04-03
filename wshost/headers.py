@@ -27,7 +27,7 @@ def encode(status=statuses.OK, headers=[]):
         header += f"{field}: {default_headers[field]}\r\n"
 
     for field in headers:
-        if field[1] != "":
+        if field[1]:
             header += f"{field[0]}: {field[1]}\r\n"
 
     header += "\r\n"

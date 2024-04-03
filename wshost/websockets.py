@@ -127,7 +127,7 @@ class Websocket:
             try:
                 message = self.conn.recv(self.max_size)
 
-                if message == b"":
+                if not message:
                     self.conn.close()
                     clients.remove(self)
                     self.onclose(self)

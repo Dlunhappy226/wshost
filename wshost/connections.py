@@ -13,7 +13,7 @@ class Connection:
             except:
                 raise exceptions.BadRequest
             
-            if char == b"":
+            if not char:
                 raise exceptions.NoData
             
             data += char

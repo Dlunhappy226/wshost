@@ -34,7 +34,7 @@ class Clients:
             except exceptions.OverBuffer:
                 return self.generate_error_message(statuses.URI_TOO_LARGE, request)
 
-            if first_line == b"":
+            if not first_line:
                 return True
             
             try:
@@ -48,7 +48,7 @@ class Clients:
             while True:
                 try:
                     line = self.connection.readline(self.config.buffer_size - len(header))
-                    if line == b"":
+                    if not line:
                         break
 
                     header += line + b"\r\n"
