@@ -70,6 +70,7 @@ def request_handle(request):
 
             content = read(f"{root}{path}")
             content_type = mimetypes.guess_type(filename)[0]
+            
             if content_type == None:
                 content_type = "text/plain"
 

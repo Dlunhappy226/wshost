@@ -35,7 +35,7 @@ def multipart_decode(request):
 
     for x in fields:
         header, content_body = content_decode(x[2:-2])
-        disposition = headers.header_decode(header["Content-Disposition"])
+        disposition = headers.header_decode_quote(header["Content-Disposition"])
 
         if "filename" in disposition:
             header["filename"] = disposition["filename"].strip('"')
