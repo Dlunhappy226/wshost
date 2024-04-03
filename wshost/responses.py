@@ -6,11 +6,14 @@ import os
 
 
 class Response:
-    def __init__(self, content, header=[], status=headers.OK, connection=True):
+    def __init__(self, content, header=[], status=headers.OK, connection=True, content_type="", etag=False, no_content=False):
         self.content = content
         self.header = header
         self.status = status
         self.connection = connection
+        self.content_type = content_type
+        self.etag = etag
+        self.no_content = no_content
 
 
 class RawResponse:
@@ -65,7 +68,6 @@ def request_handle(request):
                 return Error(headers.NOT_FOUND)
 
             content = read(f"{root}{path}")
-            status = headers.OK
             content_type = mimetypes.guess_type(filename)[0]
             if content_type == None:
                 content_type = "text/plain"
@@ -74,59 +76,53 @@ def request_handle(request):
             etag = etags.generate_etag(content)
 
             if etags.check_etag(request, etag):
-                status = headers.NOT_MODIFIED
-                content = b""
-
+                return etags.not_modified(content, last_modified)
+            
         except PermissionError:
             return Error(headers.NOT_FOUND)
 
-        header = []
+        try:
+            content = content.decode()
+        except UnicodeDecodeError:
+            pass
 
-        if status != headers.NOT_MODIFIED:
-            header.append(("Content-Type", content_type))
-
-            if method == "get":
-                header.append(("Content-Length", len(content)))
-            else:
-                content = b""
-
-        header.append(("Last-Modified", last_modified))
-
-        if status != headers.NOT_MODIFIED:
-            try:
-                content.decode()
-            except UnicodeDecodeError:
-                header.append(("Accept-Ranges", "bytes"))
-
-        if "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive":
-            header.append(("Connection", "keep-alive"))
-        else:
-            header.append(("Connection", "close"))
-        header.append(("ETag", etag))
-        
-        return RawResponse(headers.encode(status=status, headers=header) + content)
+        return Response(content, header=[("Last-Modified", last_modified)], content_type=content_type, etag=True, no_content=(method == "head"))
     else:
         return Error(headers.METHOD_NOT_ALLOWED)
 
-def encode_response(content, status=headers.OK, header=[], connection=True):
+def encode_response(content, status=headers.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
+    if type(content) == list or type(content) == dict:
+        content = json.dumps(content)
+
+    if type(content) == str:
+        content = content.encode()
+        byte = False
+    else:
+        byte = True
+
     default_header = []
+
+    if content_type and (not headers.check_header(header, "Content-Type")):
+        default_header.append(("Content-Type", content_type))
 
     if not headers.check_header(header, "Content-Length"):
         default_header.append(("Content-Length", len(content)))
 
-    if type(content) == bytes and not headers.check_header(header, "Accept-Ranges"):
-        default_header.append(("Accept-Ranges", "bytes"))
+    default_header += header
 
     if not headers.check_header(header, "Connection"):
         if connection:
             default_header.append(("Connection", "keep-alive"))
         else: 
             default_header.append(("Connection", "close"))
-            
-    if type(content) == list or type(content) == dict:
-        content = json.dumps(content)
 
-    if type(content) == str:
-        content = content.encode()
+    if etag and (not headers.check_header(header, "ETag")):
+       default_header.append(("ETag", etags.generate_etag(content)))
 
-    return headers.encode(status, header + default_header) + content
+    if byte and (not headers.check_header(header, "Accept-Ranges")):
+        default_header.append(("Accept-Ranges", "bytes"))
+
+    if no_content:
+        content = b""
+
+    return headers.encode(status, default_header) + content

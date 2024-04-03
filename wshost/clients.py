@@ -186,7 +186,7 @@ class Clients:
         
         elif type(response) == responses.Response:
             if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
-                self.conn.sendall(responses.encode_response(response.content, response.status, response.header, connection=(response.connection and connection)))
+                self.conn.sendall(responses.encode_response(response.content, response.status, response.header, (response.connection and connection), response.content_type, response.etag, response.no_content))
                 return response.connection and connection
             
             return False
