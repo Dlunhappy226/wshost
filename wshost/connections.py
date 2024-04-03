@@ -27,7 +27,7 @@ class Connection:
         body = b""
 
         while len(body) != buffer:
-            if (len(body) + self.config.buffer_size) > buffer:
+            if (len(body) + buffer_size) > buffer:
                 try:
                     body += self.conn.recv(buffer - len(body))
                 except:
@@ -35,7 +35,7 @@ class Connection:
                 
             else:
                 try:
-                    body += self.conn.recv(self.config.buffer_size)
+                    body += self.conn.recv(buffer_size)
                 except:
                     raise exceptions.BadRequest
                 
