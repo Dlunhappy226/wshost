@@ -186,7 +186,15 @@ class Clients:
         
         elif type(response) == responses.Response:
             if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
-                self.conn.sendall(responses.encode_response(response.content, response.status, response.header, (response.connection and connection), response.content_type, response.etag, response.no_content))
+                self.conn.sendall(responses.encode_response(
+                    response.content,
+                    status=response.status,
+                    header=response.header,
+                    connection=(response.connection and connection),
+                    content_type=response.content_type,
+                    etag=response.etag,
+                    no_content=response.no_content
+                ))
                 return response.connection and connection
             
             return False
@@ -200,7 +208,13 @@ class Clients:
             return self.response_handle(self.handle_request(request), request)
         
         elif type(response) == responses.Redirect:
-            self.conn.sendall(responses.encode_response("", response.status, response.header + [("Location", response.url), ("Content-Length", "")], connection=(response.connection and connection)))
+            self.conn.sendall(responses.encode_response(
+                "",
+                status=response.status,
+                header=response.header + [("Location", response.url), ("Content-Length", "")],
+                connection=(response.connection and connection)
+            ))
+            
             return response.connection and connection
         
         elif type(response) == responses.Error:
