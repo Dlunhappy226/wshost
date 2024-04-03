@@ -2,7 +2,7 @@ from wshost import exceptions
 from wshost import responses
 from wshost import encodings
 from wshost import cookies
-from wshost import payload
+from wshost import payloads
 from wshost import headers
 from wshost import errors
 from wshost import status
@@ -135,10 +135,10 @@ class Clients:
 
             if "Content-Type" in header:
                 if header["Content-Type"] == "application/x-www-form-urlencoded":
-                    request["form"] = payload.form_decode(request)
+                    request["form"] = payloads.form_decode(request)
 
                 if list(headers.header_decode(header["Content-Type"]))[0] == "multipart/form-data":
-                    request["form"] = payload.multipart_decode(request)
+                    request["form"] = payloads.multipart_decode(request)
 
             self.handle_request(request)
         
