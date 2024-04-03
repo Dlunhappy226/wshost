@@ -1,5 +1,5 @@
+from wshost import statuses
 from wshost import headers
-from wshost import status
 from wshost import etags
 import mimetypes
 import json
@@ -7,7 +7,7 @@ import os
 
 
 class Response:
-    def __init__(self, content, header=[], status=status.OK, connection=True, content_type="", etag=False, no_content=False):
+    def __init__(self, content, header=[], status=statuses.OK, connection=True, content_type="", etag=False, no_content=False):
         self.content = content
         self.header = header
         self.status = status
@@ -24,7 +24,7 @@ class RawResponse:
 
 
 class Redirect:
-    def __init__(self, url, status=status.FOUND, header=[], connection=True):
+    def __init__(self, url, status=statuses.FOUND, header=[], connection=True):
         self.url = url
         self.status = status
         self.header = header
@@ -66,11 +66,11 @@ def request_handle(request):
                 return Redirect(f"{path}/")
 
             if not os.path.exists(f"{root}{path}"):
-                return Error(status.NOT_FOUND)
+                return Error(statuses.NOT_FOUND)
 
             content = read(f"{root}{path}")
             content_type = mimetypes.guess_type(filename)[0]
-            
+
             if content_type == None:
                 content_type = "text/plain"
 
@@ -81,7 +81,7 @@ def request_handle(request):
                 return etags.not_modified(content, last_modified)
             
         except PermissionError:
-            return Error(status.NOT_FOUND)
+            return Error(statuses.NOT_FOUND)
 
         try:
             content = content.decode()
@@ -90,9 +90,9 @@ def request_handle(request):
 
         return Response(content, header=[("Last-Modified", last_modified)], content_type=content_type, etag=True, no_content=(method == "head"))
     else:
-        return Error(status.METHOD_NOT_ALLOWED)
+        return Error(statuses.METHOD_NOT_ALLOWED)
 
-def encode_response(content, status=status.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
+def encode_response(content, status=statuses.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
     if type(content) in [list, dict]:
         content = json.dumps(content)
 
@@ -107,8 +107,11 @@ def encode_response(content, status=status.OK, header=[], connection=True, conte
     if content_type and (not headers.check_header(header, "Content-Type")):
         default_header.append(("Content-Type", content_type))
 
-    if not headers.check_header(header, "Content-Length"):
+    if (not headers.check_header(header, "Content-Length")) and (not ((len(content) == 0) and (status == statuses.OK))):
         default_header.append(("Content-Length", len(content)))
+
+    if (len(content) == 0) and (status == statuses.OK):
+        status == statuses.NO_CONTENT
 
     default_header += header
 

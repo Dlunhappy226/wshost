@@ -1,5 +1,5 @@
 from wshost import responses
-from wshost import status
+from wshost import statuses
 import traceback
 
 
@@ -19,12 +19,12 @@ def generate_error_message(error, request):
         except:
             if request["config"].debug:
                 traceback.print_exc()
-            return create_error_message(status.INTERNAL_SERVER_ERROR, request)
+            return create_error_message(statuses.INTERNAL_SERVER_ERROR, request)
 
     return create_error_message(error, request)
 
 def create_error_message(error, request):
-    if error in [status.BAD_REQUEST, status.CONTENT_TOO_LARGE, status.REQUEST_HEADER_FIELDS_TOO_LARGE]:
+    if error in [statuses.BAD_REQUEST, statuses.CONTENT_TOO_LARGE, statuses.REQUEST_HEADER_FIELDS_TOO_LARGE]:
         connection = "close"
     else:
         connection = "keep-alive"
