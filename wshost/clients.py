@@ -1,3 +1,4 @@
+from wshost import connections
 from wshost import exceptions
 from wshost import responses
 from wshost import encodings
@@ -15,40 +16,20 @@ class Clients:
         self.conn = conn
         self.addr = addr
         self.config = config
+        self.connection = connections.Connection(conn)
 
     def run_forever(self):
         while self.request_handle():
             pass
 
         self.conn.close()
-
-    def readline(self, buffer=None):
-        if buffer is None:
-            buffer = self.config.buffer_size
-
-        data = b""
-        while True:
-            try:
-                char = self.conn.recv(1)        
-            except:
-                raise exceptions.BadRequest
-            
-            if char == b"":
-                raise exceptions.NoData
-            
-            data += char
-            if data.endswith(b"\r\n"):
-                return data[:-2]
-            
-            if len(data) == buffer:
-                raise exceptions.OverBuffer
     
     def request_handle(self):
         request = {"conn": self.conn, "addr": self.addr, "ip": self.addr[0], "config": self.config}
 
         try:
             try:
-                first_line = self.readline()
+                first_line = self.connection.readline(self.config.buffer_size)
             
             except exceptions.OverBuffer:
                 return self.generate_error_message(status.URI_TOO_LARGE, request)
@@ -66,7 +47,7 @@ class Clients:
 
             while True:
                 try:
-                    line = self.readline(buffer=self.config.buffer_size - len(header))
+                    line = self.connection.readline(self.config.buffer_size - len(header))
                     if line == b"":
                         break
 
@@ -97,23 +78,11 @@ class Clients:
                     upload_size = int(header["Content-Length"])
                 except:
                     raise exceptions.BadRequest
-                
+                    
                 if upload_size > self.config.max_upload_size:
                     return self.generate_error_message(status.CONTENT_TOO_LARGE, request)
-
                 else:
-                    while len(body) != upload_size:
-                        if (len(body) + self.config.buffer_size) > upload_size:
-                            try:
-                                body += self.conn.recv(upload_size - len(body))
-                            except:
-                                raise exceptions.BadRequest
-                            
-                        else:
-                            try:
-                                body += self.conn.recv(self.config.buffer_size)
-                            except:
-                                raise exceptions.BadRequest
+                    body = self.connection.read(upload_size, self.config.buffer_size)
 
             if "Transfer-Encoding" in header:
                 if header["Transfer-Encoding"] == "chunked":

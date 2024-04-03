@@ -1,3 +1,4 @@
+from wshost import connections
 from wshost import exceptions
 from wshost import websockets
 from wshost import encodings
