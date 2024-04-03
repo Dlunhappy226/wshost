@@ -143,19 +143,19 @@ class Clients:
         return self.response_handle(responses.request_handle(request), request)
         
     def generate_error_message(self, error, request):
-        return self.response_handle(errors.generate_error_message(error, request), request)
+        return self.response_handle(errors.generate_error_message(error, request), request, error)
     
-    def response_handle(self, response, request):
+    def response_handle(self, response, request, status=statuses.OK):
         connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
         if type(response) in [str, bytes, list, dict]:
-            self.conn.sendall(responses.encode_response(response, connection=connection))
+            self.conn.sendall(responses.encode_response(response, connection=connection, status=status))
             return connection
         
         elif type(response) == bool:
             return response
         
         elif type(response) == responses.Response:
-            if type(response) in [str, bytes, list, dict]:
+            if type(response.content) in [str, bytes, list, dict]:
                 self.conn.sendall(responses.encode_response(
                     response.content,
                     status=response.status,
