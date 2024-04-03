@@ -205,7 +205,7 @@ class Clients:
 
         elif type(response) == responses.Route:
             request["path"] = response.path
-            return self.response_handle(self.handle_request(request), request)
+            return self.response_handle(responses.request_handle(request), request)
         
         elif type(response) == responses.Redirect:
             self.conn.sendall(responses.encode_response(
@@ -214,7 +214,7 @@ class Clients:
                 header=response.header + [("Location", response.url), ("Content-Length", "")],
                 connection=(response.connection and connection)
             ))
-            
+
             return response.connection and connection
         
         elif type(response) == responses.Error:
