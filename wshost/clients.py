@@ -147,7 +147,7 @@ class Clients:
     
     def response_handle(self, response, request):
         connection = "header" in request and "Connection" in request["header"] and request["header"]["Connection"] == "keep-alive"
-        if type(response) == str or type(response) == bytes or type(response) == list or type(response) == dict:
+        if type(response) in [str, bytes, list, dict]:
             self.conn.sendall(responses.encode_response(response, connection=connection))
             return connection
         
@@ -155,7 +155,7 @@ class Clients:
             return response
         
         elif type(response) == responses.Response:
-            if type(response.content) == str or type(response.content) == bytes or type(response.content) == list or type(response.content) == dict:
+            if type(response) in [str, bytes, list, dict]:
                 self.conn.sendall(responses.encode_response(
                     response.content,
                     status=response.status,

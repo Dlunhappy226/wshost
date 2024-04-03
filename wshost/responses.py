@@ -55,7 +55,7 @@ def request_handle(request):
     file = path.split("/")
     filename = file[-1]
     
-    if method == "get" or method == "head":
+    if method in ["get", "head"]:
         try:
             if filename == "":
                 path = f"{path}/index.html"
@@ -92,7 +92,7 @@ def request_handle(request):
         return Error(status.METHOD_NOT_ALLOWED)
 
 def encode_response(content, status=status.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
-    if type(content) == list or type(content) == dict:
+    if type(content) in [list, dict]:
         content = json.dumps(content)
 
     if type(content) == str:

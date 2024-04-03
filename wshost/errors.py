@@ -24,7 +24,7 @@ def generate_error_message(error, request):
     return create_error_message(error, request)
 
 def create_error_message(error, request):
-    if error == status.BAD_REQUEST or error == status.CONTENT_TOO_LARGE or error == status.REQUEST_HEADER_FIELDS_TOO_LARGE:
+    if error in [status.BAD_REQUEST, status.CONTENT_TOO_LARGE, status.REQUEST_HEADER_FIELDS_TOO_LARGE]:
         connection = "close"
     else:
         connection = "keep-alive"
