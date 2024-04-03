@@ -1,10 +1,10 @@
 from wshost import responses
-from wshost import headers
+from wshost import status
 import base64
 
 
 def unauthorized(realm="Acess to the staging site."):
-    return responses.Response("", status=headers.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
+    return responses.Response("", status=status.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
 
 def get_auth(request):
     if "Authorization" in request["header"]:

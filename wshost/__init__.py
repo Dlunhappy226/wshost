@@ -7,6 +7,7 @@ from wshost import clients
 from wshost import cookies
 from wshost import payload
 from wshost import headers
+from wshost import status
 from wshost import errors
 from wshost import etags
 from wshost import auth

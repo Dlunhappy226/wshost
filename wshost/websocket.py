@@ -1,4 +1,5 @@
 from wshost import headers
+from wshost import status
 import traceback
 import hashlib
 import base64
@@ -55,7 +56,7 @@ class Websocket:
         else:
             websocket_key = self.generate_key(header["Sec-Websocket-Key"])
 
-        response = headers.encode(headers.SWITCHING_PROTOCOLS, [
+        response = headers.encode(status.SWITCHING_PROTOCOLS, [
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", websocket_key)

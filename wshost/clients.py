@@ -5,6 +5,7 @@ from wshost import cookies
 from wshost import payload
 from wshost import headers
 from wshost import errors
+from wshost import status
 import traceback
 import fnmatch
 
@@ -50,7 +51,7 @@ class Clients:
                 first_line = self.readline()
             
             except exceptions.OverBuffer:
-                return self.generate_error_message(headers.URI_TOO_LARGE, request)
+                return self.generate_error_message(status.URI_TOO_LARGE, request)
 
             if first_line == b"":
                 return True
@@ -72,7 +73,7 @@ class Clients:
                     header += line + b"\r\n"
 
                 except exceptions.OverBuffer:
-                    return self.generate_error_message(headers.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
+                    return self.generate_error_message(status.REQUEST_HEADER_FIELDS_TOO_LARGE, request)
                 
             header = headers.decode(header)
 
@@ -98,7 +99,7 @@ class Clients:
                     raise exceptions.BadRequest
                 
                 if upload_size > self.config.max_upload_size:
-                    return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
+                    return self.generate_error_message(status.CONTENT_TOO_LARGE, request)
 
                 else:
                     while len(body) != upload_size:
@@ -120,7 +121,7 @@ class Clients:
                         body = encodings.read_chunked(request)
                     
                     except exceptions.OverBuffer:
-                        return self.generate_error_message(headers.CONTENT_TOO_LARGE, request)
+                        return self.generate_error_message(status.CONTENT_TOO_LARGE, request)
                     
                     except:
                         raise exceptions.BadRequest
@@ -143,7 +144,7 @@ class Clients:
         
         except exceptions.BadRequest:
             try:
-                return self.generate_error_message(headers.BAD_REQUEST, request)
+                return self.generate_error_message(status.BAD_REQUEST, request)
             except:
                 return False
             
@@ -157,7 +158,7 @@ class Clients:
             if self.config.debug:
                 traceback.print_exc()
 
-            return self.generate_error_message(headers.INTERNAL_SERVER_ERROR, request)
+            return self.generate_error_message(status.INTERNAL_SERVER_ERROR, request)
         
     def handle_request(self, request):
         for x in self.config.route:
@@ -167,7 +168,7 @@ class Clients:
                 else:
                     response = self.config.route[x]
 
-                if not ((type(response) == responses.Error and response.error == headers.NOT_FOUND and response.passing) or response == None):
+                if not ((type(response) == responses.Error and response.error == status.NOT_FOUND and response.passing) or response == None):
                     return self.response_handle(response, request)
                 
         return self.response_handle(responses.request_handle(request), request)
