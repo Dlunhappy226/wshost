@@ -135,3 +135,9 @@ def encode_response(content, status=statuses.OK, header=[], connection=True, con
         content = b""
 
     return headers.encode(status, default_header) + content
+
+def unauthorized(realm="Acess to the staging site."):
+    return Response("", status=statuses.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
+
+def not_modified(content, last_modified):
+    return Response(content, status=statuses.NOT_MODIFIED, header=[("Last-Modified", last_modified)], etag=True, no_content=False)
