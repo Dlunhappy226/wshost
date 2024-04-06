@@ -3,16 +3,16 @@ from wshost import exceptions
 
 def read_chunked(request):
     def read(buffer):
-        read_data = b""
+        data_read = bytes()
         for x in range(buffer):
-            read_data += request["conn"].recv(1)
+            data_read += request["conn"].recv(1)
                 
-        return read_data
+        return data_read
     
-    data = b""
+    data = bytes()
 
     while True:
-        chunk_size_str = b""
+        chunk_size_str = bytes()
         while True:
             char = read(1)
             if char == b"\r":

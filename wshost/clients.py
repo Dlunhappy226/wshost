@@ -43,7 +43,7 @@ class Clients:
             except:
                 raise exceptions.BadRequest
 
-            header = b""
+            header = bytes()
 
             while True:
                 try:
@@ -71,7 +71,7 @@ class Clients:
                 "config": self.config
             }
 
-            body = b""
+            body = bytes()
 
             if "Content-Length" in header:
                 try:

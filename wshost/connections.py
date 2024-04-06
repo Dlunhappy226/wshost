@@ -6,7 +6,7 @@ class Connection:
         self.conn = conn
 
     def readline(self, buffer):
-        data = b""
+        data = bytes()
         while True:
             try:
                 char = self.conn.recv(1)        
@@ -24,7 +24,7 @@ class Connection:
                 raise exceptions.OverBuffer
             
     def read(self, buffer, buffer_size):
-        body = b""
+        body = bytes()
 
         while len(body) != buffer:
             if (len(body) + buffer_size) > buffer:
