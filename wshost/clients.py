@@ -159,6 +159,25 @@ class Clients:
         elif type(response) == bool:
             return response
         
+        elif type(response) == responses.RawResponse:
+            self.conn.sendall(response.response)
+            return response.connection and connection
+
+        elif type(response) == responses.Route:
+            request["path"] = response.path
+            return self.response_handle(responses.request_handle(request, no_etag=(status != statuses.OK)), request, status=status)
+        
+        elif type(response) == responses.Redirect:
+            return self.response_handle(responses.Response(
+                "",
+                header=response.header + [("Location", response.url), ("Content-Length", "")],
+                status=response.status
+            ),
+            request, status=status)
+        
+        elif type(response) == responses.Error:
+            return self.generate_error_message(response.error, request)
+        
         elif type(response) == responses.Response:
             if type(response.content) in [str, bytes, list, dict]:
                 if status != statuses.OK and response.status == statuses.OK:
@@ -176,27 +195,6 @@ class Clients:
 
                 return response.connection and connection
             return False
-        
-        elif type(response) == responses.RawResponse:
-            self.conn.sendall(response.response)
-            return response.connection and connection
-
-        elif type(response) == responses.Route:
-            request["path"] = response.path
-            return self.response_handle(responses.request_handle(request, no_etag=(status != statuses.OK)), request, status=status)
-        
-        elif type(response) == responses.Redirect:
-            self.conn.sendall(responses.encode_response(
-                "",
-                status=response.status,
-                header=response.header + [("Location", response.url), ("Content-Length", "")],
-                connection=(response.connection and connection)
-            ))
-
-            return response.connection and connection
-        
-        elif type(response) == responses.Error:
-            return self.generate_error_message(response.error, request)
         
         else:
             return False
