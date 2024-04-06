@@ -42,6 +42,9 @@ def decode(header):
             raise exceptions.BadRequest
         
         field, sep, value = x.partition(":")
+        if not sep:
+            raise exceptions.BadRequest
+    
         headers[field] = value.lstrip()
 
     return headers
@@ -49,6 +52,9 @@ def decode(header):
 def first_line_decode(first_line):
     method, path, protocol = first_line.split(" ")
     protocol, sep, version = protocol.partition("/")
+    if not sep:
+        raise exceptions.BadRequest
+
     return method, path, protocol, version
 
 def path_decode(path):

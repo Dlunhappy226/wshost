@@ -39,6 +39,9 @@ class Clients:
             
             try:
                 method, path, protocol, protocol_version = headers.first_line_decode(first_line.decode())
+                if method not in ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"]:
+                    raise exceptions.BadRequest
+
                 path, parameter = headers.path_decode(path)
             except:
                 raise exceptions.BadRequest
@@ -135,6 +138,9 @@ class Clients:
                 if callable(self.config.route[x]):
                     response = self.config.route[x](request)
                 else:
+                    if request["method"] not in ["GET", "HEAD", "POST"]:
+                        return self.generate_error_message(statuses.METHOD_NOT_ALLOWED, request)
+                    
                     response = self.config.route[x]
 
                 if not (((type(response) == responses.Error) and (response.error == statuses.NOT_FOUND) and response.passing) or response == None):

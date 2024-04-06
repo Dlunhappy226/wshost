@@ -49,13 +49,13 @@ def read(filename):
     return content
 
 def request_handle(request, no_etag=False):
-    method = request["method"].lower()
+    method = request["method"]
     path = request["path"]
     root = request["config"].root_directory
     file = path.split("/")
     filename = file[-1]
     
-    if method in ["get", "head"]:
+    if method in ["GET", "HEAD"]:
         try:
             if not filename:
                 path = f"{path}/index.html"

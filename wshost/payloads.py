@@ -10,16 +10,25 @@ def form_decode(request):
     form = {}
     for x in fields:
         field, sep, value = x.partition("=")
+        if not sep:
+            raise exceptions.BadRequest
+
         form[urllib.parse.unquote_plus(field)] = urllib.parse.unquote_plus(value)
 
     return form
 
 def content_decode(content):
     header, sep, body = content.partition(b"\r\n\r\n")
+    if not sep:
+        raise exceptions.BadRequest
+    
     fields = header.decode().split("\r\n")
     headers = {}
     for x in fields:
         field, sep, value = x.partition(":")
+        if not sep:
+            raise exceptions.BadRequest
+        
         headers[field] = value.lstrip()
 
     return headers, body
