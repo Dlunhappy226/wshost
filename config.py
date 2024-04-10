@@ -1,4 +1,5 @@
 from route import route, error_route
+from wshost import *
 
 
 #Socket binding address
@@ -7,7 +8,9 @@ port = 8000
 
 
 #File config
-root_directory = "html"
+html_directory = "html"
+root_directory = files.get_root_directory(__file__)
+
 max_upload_size = 1024 * 1024
 buffer_size = 8 * 1024
 

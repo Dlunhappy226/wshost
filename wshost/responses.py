@@ -51,7 +51,7 @@ def read(filename):
 def request_handle(request, no_etag=False):
     method = request["method"]
     path = request["path"]
-    root = request["config"].root_directory
+    root = os.path.join(request["config"].root_directory, request["config"].html_directory).replace("\\", "/")
     file = path.split("/")
     filename = file[-1]
     
@@ -79,7 +79,7 @@ def request_handle(request, no_etag=False):
                 etag = etags.generate_etag(content)
 
                 if etags.check_etag(request, etag):
-                    return etags.not_modified(content, last_modified)
+                    return not_modified(content, last_modified)
             
             else:
                 last_modified = []

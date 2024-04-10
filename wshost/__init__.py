@@ -11,5 +11,6 @@ from wshost import cookies
 from wshost import headers
 from wshost import errors
 from wshost import etags
+from wshost import files
 from wshost import auth
 from wshost import main
