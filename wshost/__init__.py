@@ -4,6 +4,7 @@ from wshost import websockets
 from wshost import encodings
 from wshost import responses
 from wshost import payloads
+from wshost import requests
 from wshost import sessions
 from wshost import statuses
 from wshost import clients

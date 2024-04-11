@@ -3,6 +3,7 @@ from wshost import exceptions
 from wshost import responses
 from wshost import encodings
 from wshost import payloads
+from wshost import requests
 from wshost import statuses
 from wshost import cookies
 from wshost import headers
@@ -146,7 +147,7 @@ class Clients:
                 if not (((type(response) == responses.Error) and (response.error == statuses.NOT_FOUND) and response.passing) or response == None):
                     return self.response_handle(response, request)
                 
-        return self.response_handle(responses.request_handle(request), request)
+        return self.response_handle(requests.request_handle(request), request)
         
     def generate_error_message(self, error, request):
         return self.response_handle(errors.generate_error_message(error, request), request, error)
@@ -165,7 +166,7 @@ class Clients:
 
         elif type(response) == responses.Route:
             request["path"] = response.path
-            return self.response_handle(responses.request_handle(request, no_etag=(status != statuses.OK)), request, status=status)
+            return self.response_handle(requests.request_handle(request, no_etag=(status != statuses.OK)), request, status=status)
         
         elif type(response) == responses.Redirect:
             return self.response_handle(responses.Response(
