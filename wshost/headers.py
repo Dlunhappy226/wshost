@@ -68,20 +68,26 @@ def path_decode(path):
 
     return urllib.parse.unquote(path), parameters
 
-def header_decode(header):
+def header_decode(header, separator=False):
     headers = header.split(";")
     fields = {}
     for x in headers:
         field, sep, value = x.partition("=")
+        if separator and not sep:
+            raise exceptions.BadRequest
+        
         fields[field] = value
 
     return fields
 
-def header_decode_quote(header):
+def header_decode_quote(header, separator=False):
     headers = re.split(r"; (?=(?:[^\"]*[\"][^\"]*[\"])*[^\"]*$)", header)
     fields = {}
     for x in headers:
         field, sep, value = x.partition("=")
+        if separator and not sep:
+            raise exceptions.BadRequest
+
         fields[field] = value
 
     return fields

@@ -6,7 +6,7 @@ def get_cookie(request):
     if "Cookie" not in request["header"]:
         return {}
     
-    return headers.header_decode(request["header"]["Cookie"])
+    return headers.header_decode(request["header"]["Cookie"], separator=True)
 
 def set_cookie(name, value, option=""):
     if not option:
