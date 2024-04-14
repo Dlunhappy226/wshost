@@ -2,7 +2,7 @@ from wshost import *
 
 
 route = {
-
+    "/test": "fuck python"
 }
 
 
