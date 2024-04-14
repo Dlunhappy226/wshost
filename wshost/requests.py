@@ -199,8 +199,11 @@ class Request:
                     
                     response = self.config.route[x]
 
-                if not (((type(response) == responses.Error) and (response.error == statuses.NOT_FOUND) and response.passing) or response == None):
+                if not (((type(response) == responses.Error) and (response.error == statuses.NOT_FOUND) and response.passing) or response == None or type(response) == responses.Route):
                     return self.response_handle(response)
+                
+                if type(response) == responses.Route:
+                    self.request["path"] = response.path
                 
         return self.response_handle(request_handle(self.request))
         
@@ -218,10 +221,6 @@ class Request:
         elif type(response) == responses.RawResponse:
             self.conn.sendall(response.response)
             return response.connection and connection
-
-        elif type(response) == responses.Route:
-            self.request["path"] = response.path
-            return self.response_handle(request_handle(self.request, no_etag=(status != statuses.OK)), status=status)
         
         elif type(response) == responses.Redirect:
             return self.response_handle(responses.Response(
