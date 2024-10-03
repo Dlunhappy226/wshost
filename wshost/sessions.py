@@ -10,10 +10,10 @@ def new_session(value, id_length=32):
     return id
 
 def get_session(id): 
+    if not id not in sessions:
+        return None
+    
     return sessions[id]
-
-def check_session(id):
-    return id in sessions
 
 def set_session(id, value):
     sessions[id] = value
