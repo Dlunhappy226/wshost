@@ -6,7 +6,7 @@ from wshost import responses
 from wshost import payloads
 from wshost import requests
 from wshost import sessions
-from wshost import status
+from wshost import statuses
 from wshost import clients
 from wshost import cookies
 from wshost import headers

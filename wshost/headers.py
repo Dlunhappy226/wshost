@@ -1,5 +1,5 @@
 from wshost import exceptions
-from wshost import status
+from wshost import statuses
 import urllib.parse
 import time
 import re
@@ -12,7 +12,7 @@ def check_header(headers, field):
         
     return False
 
-def encode(status=status.OK, headers=[]):
+def encode(status=statuses.OK, headers=[]):
     default_headers = {}
     if not check_header(headers, "Server"):
         default_headers["Server"] = "wshost"

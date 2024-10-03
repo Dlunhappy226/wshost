@@ -1,5 +1,5 @@
 from wshost import exceptions
-from wshost import status
+from wshost import statuses
 from wshost import headers
 import traceback
 import hashlib
@@ -62,7 +62,7 @@ class Websocket:
         else:
             websocket_key = self.generate_key(request["header"]["Sec-Websocket-Key"])
 
-        response = headers.encode(status.SWITCHING_PROTOCOLS, [
+        response = headers.encode(statuses.SWITCHING_PROTOCOLS, [
             ("Upgrade", "websocket"),
             ("Connection", "Upgrade"),
             ("Sec-WebSocket-Accept", websocket_key)

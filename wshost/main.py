@@ -38,6 +38,6 @@ class App:
         while True:
             try:
                 conn, addr = server.accept()
-                threading.Thread(target=clients.Clients(conn, addr, self.config).run_forever, daemon=True).start()
+                threading.Thread(target=clients.Clients(conn, addr, self.config).run_forever).start()
             except:
                 return
