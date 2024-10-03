@@ -4,7 +4,7 @@ import os
 
 
 USAGE = """Usage: wshost <command>
-init:    Create a new WShost project in the current directory.
+init:    Create a new WSHost project in the current directory.
 help:    Show this page.
 """
 
@@ -34,7 +34,7 @@ def cli():
 
 
 def init():
-    print("Creating a new WShost project in the current directory.")
+    print("Creating a new WSHost project in the current directory.")
 
     if not os.path.exists("html"):
         os.makedirs("html")

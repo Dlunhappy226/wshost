@@ -1,4 +1,4 @@
-# Wshost
+# WSHost
 A python based web server including custom python route.
 
 ## Install
