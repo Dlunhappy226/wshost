@@ -3,7 +3,7 @@ from wshost import exceptions
 from wshost import encodings
 from wshost import responses
 from wshost import payloads
-from wshost import statuses
+from wshost import status
 from wshost import cookies
 from wshost import headers
 from wshost import errors
@@ -42,7 +42,7 @@ def request_handle(request, no_etag=False):
                 return responses.Redirect(f"{path}/")
 
             if not os.path.exists(f"{root}{path}"):
-                return responses.Error(statuses.NOT_FOUND)
+                return responses.Error(status.NOT_FOUND)
 
             content = read(f"{root}{path}")
             content_type = mimetypes.guess_type(filename)[0]
@@ -61,7 +61,7 @@ def request_handle(request, no_etag=False):
                 last_modified = []
             
         except PermissionError:
-            return responses.Error(statuses.NOT_FOUND)
+            return responses.Error(status.NOT_FOUND)
 
         try:
             content = content.decode()
@@ -70,7 +70,7 @@ def request_handle(request, no_etag=False):
 
         return responses.Response(content, header=last_modified, content_type=content_type, etag=(not no_etag), no_content=(method == "head"))
     else:
-        return responses.Error(statuses.METHOD_NOT_ALLOWED)
+        return responses.Error(status.METHOD_NOT_ALLOWED)
     
 class Request:
     def __init__(self, conn, addr, config):
@@ -88,7 +88,7 @@ class Request:
                 first_line = self.connection.readline(self.config.buffer_size)
             
             except exceptions.OverBuffer:
-                return self.generate_error_message(statuses.URI_TOO_LARGE)
+                return self.generate_error_message(status.URI_TOO_LARGE)
 
             if not first_line:
                 return True
@@ -113,7 +113,7 @@ class Request:
                     header += line + b"\r\n"
 
                 except exceptions.OverBuffer:
-                    return self.generate_error_message(statuses.REQUEST_HEADER_FIELDS_TOO_LARGE)
+                    return self.generate_error_message(status.REQUEST_HEADER_FIELDS_TOO_LARGE)
                 
             header = headers.decode(header)
 
@@ -134,13 +134,13 @@ class Request:
             try:
                 self.get_payload(header)
             except exceptions.OverBuffer:
-                return self.generate_error_message(statuses.CONTENT_TOO_LARGE)
+                return self.generate_error_message(status.CONTENT_TOO_LARGE)
 
             return self.handle_request()
         
         except exceptions.BadRequest:
             try:
-                return self.generate_error_message(statuses.BAD_REQUEST)
+                return self.generate_error_message(status.BAD_REQUEST)
             except:
                 return False
             
@@ -154,7 +154,7 @@ class Request:
             if self.config.debug:
                 traceback.print_exc()
 
-            return self.generate_error_message(statuses.INTERNAL_SERVER_ERROR)
+            return self.generate_error_message(status.INTERNAL_SERVER_ERROR)
         
     def get_payload(self, header):
         if "Content-Length" in header:
@@ -195,11 +195,11 @@ class Request:
                     response = self.config.route[x](self.request)
                 else:
                     if self.request["method"] not in ["GET", "HEAD", "POST"]:
-                        return self.generate_error_message(statuses.METHOD_NOT_ALLOWED)
+                        return self.generate_error_message(status.METHOD_NOT_ALLOWED)
                     
                     response = self.config.route[x]
 
-                if not (((type(response) == responses.Error) and (response.error == statuses.NOT_FOUND) and response.passing) or response == None or type(response) == responses.Route):
+                if not (((type(response) == responses.Error) and (response.error == status.NOT_FOUND) and response.passing) or response == None or type(response) == responses.Route):
                     return self.response_handle(response)
                 
                 if type(response) == responses.Route:
@@ -210,7 +210,7 @@ class Request:
     def generate_error_message(self, error):
         return self.response_handle(errors.generate_error_message(error, self.request), status=error)
     
-    def response_handle(self, response, status=statuses.OK):
+    def response_handle(self, response, status=status.OK):
         connection = ("header" in self.request) and ("Connection" in self.request["header"]) and (self.request["header"]["Connection"] == "keep-alive")
         if type(response) in [str, bytes, list, dict]:
             return self.response_handle(responses.Response(response), status=status)
@@ -235,7 +235,7 @@ class Request:
         
         elif type(response) == responses.Response:
             if type(response.content) in [str, bytes, list, dict]:
-                if status != statuses.OK and response.status == statuses.OK:
+                if status != status.OK and response.status == status.OK:
                     response.status = status
 
                 self.conn.sendall(responses.encode_response(

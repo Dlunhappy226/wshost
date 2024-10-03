@@ -1,11 +1,11 @@
-from wshost import statuses
+from wshost import status
 from wshost import headers
 from wshost import etags
 import json
 
 
 class Response:
-    def __init__(self, content, header=[], status=statuses.OK, connection=True, content_type="", etag=False, no_content=False):
+    def __init__(self, content, header=[], status=status.OK, connection=True, content_type="", etag=False, no_content=False):
         self.content = content
         self.header = header
         self.status = status
@@ -22,7 +22,7 @@ class RawResponse:
 
 
 class Redirect:
-    def __init__(self, url, status=statuses.FOUND, header=[], connection=True):
+    def __init__(self, url, status=status.FOUND, header=[], connection=True):
         self.url = url
         self.status = status
         self.header = header
@@ -40,7 +40,7 @@ class Error:
         self.passing = passing
 
 
-def encode_response(content, status=statuses.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
+def encode_response(content, status=status.OK, header=[], connection=True, content_type="", etag=False, no_content=False):
     if type(content) in [list, dict]:
         content = json.dumps(content)
 
@@ -55,11 +55,11 @@ def encode_response(content, status=statuses.OK, header=[], connection=True, con
     if content_type and (not headers.check_header(header, "Content-Type")):
         default_header.append(("Content-Type", content_type))
 
-    if (not headers.check_header(header, "Content-Length")) and (not ((len(content) == 0) and (status == statuses.OK))):
+    if (not headers.check_header(header, "Content-Length")) and (not ((len(content) == 0) and (status == status.OK))):
         default_header.append(("Content-Length", len(content)))
 
-    if (len(content) == 0) and (status == statuses.OK):
-        status = statuses.NO_CONTENT
+    if (len(content) == 0) and (status == status.OK):
+        status = status.NO_CONTENT
 
     default_header += header
 
@@ -81,10 +81,10 @@ def encode_response(content, status=statuses.OK, header=[], connection=True, con
     return headers.encode(status, default_header) + content
 
 def unauthorized(realm="Acess to the staging site."):
-    return Response("", status=statuses.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
+    return Response("", status=status.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
 
 def not_modified(content, last_modified):
-    return Response(content, status=statuses.NOT_MODIFIED, header=[("Last-Modified", last_modified)], etag=True, no_content=False)
+    return Response(content, status=status.NOT_MODIFIED, header=[("Last-Modified", last_modified)], etag=True, no_content=False)
 
 def forbidden():
-    return Error(statuses.FORBIDDEN)
+    return Error(status.FORBIDDEN)
