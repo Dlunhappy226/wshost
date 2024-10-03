@@ -3,37 +3,46 @@ import sys
 import os
 
 
-file_download = {
+USAGE = """Usage: wshost <command>
+init:    Create a new WShost project in the current directory.
+help:    Show this page.
+"""
+
+files = {
     "main.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/main.py",
-    "route.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/route.py",
     "config.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/config.py",
-    "html/index.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/index.html",
-    "requirements.txt": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/requirements.txt"
+    "route.py": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/route.py",
+    "requirements.txt": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/requirements.txt",
+    "html/index.html": "https://raw.githubusercontent.com/Dlunhappy226/wshost/main/html/index.html"
 }
 
+
+def cli():
+    args = sys.argv
+
+    if len(args) < 2:
+        print(USAGE)
+    
+    elif args[1].lower() == "init":
+        init()
+
+    elif args[1].lower() == "help":
+        print(USAGE)
+
+    else:
+        print(f"Error: command {args[1]} not found.")
+
+
 def init():
-    print("Initing wshost project.")
+    print("Creating a new WShost project in the current directory.")
 
     if not os.path.exists("html"):
         os.makedirs("html")
 
-    for x in file_download:
-        print(f"Downloading {x} ({list(file_download).index(x) + 1}/{len(file_download)})")
-        data = urllib.request.urlopen(file_download[x])
-        file = open(x, "wb+")
-        file.write(data.read())
-        file.close()
-
-    print("Finish copying all file.")
-
-def main():
-    command = sys.argv
-
-    if len(command) < 2:
-        print("'wshost init' to init a new wshost project.")
-    elif command[1] == "init":
-        init()
-    elif command[1] == "help":
-        print("'wshost init' to init a new wshost project.")
-    else:
-        print(f"Command: '{command[1]}' not found.\n'wshost help' for help.")
+    for filename in files:
+        print(f"Downloading {filename} ({list(files).index(filename) + 1}/{len(files)})")
+        request = urllib.request.urlopen(files[filename])
+        
+        with open(filename, "wb") as f:
+            f.write(request.read())
+            f.close()

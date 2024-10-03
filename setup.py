@@ -9,8 +9,8 @@ with open("README.md") as file:
 setup(
     name="wshost",
     version=VERSION,
-    author="Dlunhappy226",
-    author_email="dlun@dlun.tk",
+    author="Daniel Lun",
+    author_email="daniel@dlun.tk",
     description= DESCRIPTION,
     long_description=README,
     long_description_content_type="text/markdown",
@@ -22,7 +22,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "wshost = wshost.__main__:main"
+            "wshost = wshost.__main__:cli"
         ]
     }
 )
