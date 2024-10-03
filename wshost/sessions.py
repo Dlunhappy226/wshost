@@ -10,7 +10,7 @@ def new_session(value, id_length=32):
     return id
 
 def get_session(id): 
-    if not id not in sessions:
+    if id not in sessions:
         return None
     
     return sessions[id]
