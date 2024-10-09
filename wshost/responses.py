@@ -84,7 +84,7 @@ def unauthorized(realm="Acess to the staging site."):
     return Response("", status=statuses.UNAUTHORIZED, header=[("WWW-Authenticate", f"Basic realm={realm}")])
 
 def not_modified(content, last_modified):
-    return Response(content, status=statuses.NOT_MODIFIED, header=[("Last-Modified", last_modified)], etag=True, no_content=False)
+    return Response(content, status=statuses.NOT_MODIFIED, header=last_modified, etag=True, no_content=False)
 
 def forbidden():
     return Error(statuses.FORBIDDEN)

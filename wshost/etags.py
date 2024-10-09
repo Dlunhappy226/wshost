@@ -1,18 +1,19 @@
+from datetime import datetime
+from datetime import timezone
 from wshost import headers
-import datetime
-import hashlib
+from hashlib import md5
 import os
 
 
 def generate_etag(content):
-    return f'"{hashlib.md5(content).hexdigest()}"'
+    return f'"{md5(content).hexdigest()}"'
 
 def check_etag(request, etag):
     if "If-None-Match" in request["header"]:
-        if request["header"]["If-None-Match"] == etag:
-            return True
-              
+        return request["header"]["If-None-Match"] == etag
+      
     return False
 
 def get_last_modified(path):
-    return headers.encode_time(datetime.datetime.utcfromtimestamp(os.path.getmtime(path)).timetuple())
+    last_modified = datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc)
+    return headers.encode_time(last_modified.timetuple())
